@@ -1,13 +1,13 @@
-#  EDM — Evaluación de Modelos
+# EDM — Model Evaluation
 
-> Repositorio de prácticas de la asignatura **Evaluación de Modelos** (EDM).  
-> Contiene implementaciones en Python y R sobre evaluación avanzada de modelos de Machine Learning: clasificación sensible a costes, reconocimiento de conjuntos abiertos y análisis de equidad algorítmica.
+> Repository of practical assignments for the course **Model Evaluation** (EDM).  
+> It contains Python and R implementations focused on advanced evaluation of Machine Learning models: cost-sensitive classification, open set recognition, and algorithmic fairness analysis.
 
 ---
 
-##  Autores
+## *Authors*
 
-| Nombre | 
+| Name |
 |---|
 | Mario Álvarez Martínez |
 | Marcos Carrasco Panadero |
@@ -15,161 +15,178 @@
 
 ---
 
-##  Estructura del repositorio
+## *Repository Structure*
 
 ```
 EDM/
 │
 ├── Practica_1/
-│   └── EDM_Pract1_2026.ipynb       # Práctica 1 — Python (Jupyter Notebook)
+│   └── EDM_Pract1_2026.ipynb       # Practice 1 — Python (Jupyter Notebook)
 │
 ├── Task_2/
 │   ├── Task_2.Rmd                  # Task 2 — R Markdown
-│   └── compas-scores-two-years.csv # Dataset COMPAS (ProPublica)
+│   └── compas-scores-two-years.csv # COMPAS Dataset (ProPublica)
 │
 └── README.md
 ```
 
 ---
 
-##  Práctica 1 — Clasificación Sensible a Costes y Open Set Recognition
+## *Practice 1 — Cost-Sensitive Classification and Open Set Recognition*
 
-**Lenguaje:** Python · **Entorno:** Jupyter Notebook
+**Language:** Python · **Environment:** Jupyter Notebook
 
-### Ejercicio 1 — Test Costs & Misclassification Costs
+### *Exercise 1 — Test Costs & Misclassification Costs*
 
-Dataset: **BreastCancer** (OpenML ID: 15). El objetivo es diseñar un clasificador que **minimice el coste global**, definido como:
+Dataset: **BreastCancer** (OpenML ID: 15). The objective is to design a classifier that **minimizes the total cost**, defined as:
 
 ```
-Coste global = Coste de tests (atributos usados) + Coste de mala clasificación
+Total cost = Test cost (attributes used) + Misclassification cost
 ```
 
-La matriz de costes de clasificación es asimétrica:
+The classification cost matrix is asymmetric:
 
-| | Predicho: Benigno | Predicho: Maligno |
+| | Predicted: Benign | Predicted: Malignant |
 |---|---|---|
-| **Real: Benigno** | 0 | 4 (FP) |
-| **Real: Maligno** | 20 (FN) | 0 |
+| **Actual: Benign** | 0 | 4 (FP) |
+| **Actual: Malignant** | 20 (FN) | 0 |
 
-#### Estrategia de selección de features
-Se implementa una **búsqueda greedy forward** sobre el espacio de subconjuntos de atributos, evitando la búsqueda exhaustiva. En cada paso se incorpora la feature que mayor reducción de coste global produce.
+#### *Feature Selection Strategy*
 
-#### Estrategias para manejar costes asimétricos
-Cada paso greedy evalúa tres estrategias y selecciona la de menor coste:
+A **greedy forward search** is implemented over the feature subset space, avoiding exhaustive search. At each step, the feature that produces the greatest reduction in total cost is added.
 
-| Estrategia | Descripción |
+#### *Strategies for Handling Asymmetric Costs*
+
+Each greedy step evaluates three strategies and selects the one with the lowest cost:
+
+| Strategy | Description |
 |---|---|
-| **Thresholding** | Umbral teórico óptimo: `th = C_FP / (C_FP + C_FN) ≈ 0.167` |
-| **Rebalancing (pesos)** | Pesos de clase proporcionales al ratio de costes |
-| **Rebalancing (oversampling)** | Sobremuestreo de la clase maligna según el ratio de costes |
+| **Thresholding** | Optimal theoretical threshold: `th = C_FP / (C_FP + C_FN) ≈ 0.167` |
+| **Rebalancing (weights)** | Class weights proportional to the cost ratio |
+| **Rebalancing (oversampling)** | Oversampling of the malignant class according to the cost ratio |
 
-Los clasificadores utilizados son **Decision Tree** (`max_depth=3`) y **Regresión Logística`.
+The classifiers used are **Decision Tree** (`max_depth=3`) and **Logistic Regression**.
 
-#### Resultado
-Se genera un gráfico del trade-off entre coste de tests y coste de mala clasificación, con las opciones **Pareto-eficientes** destacadas.
+#### *Result*
+
+A plot is generated showing the trade-off between test cost and misclassification cost, highlighting the **Pareto-efficient** options.
 
 ---
 
-### Ejercicio 2 — Open Set Recognition (OSR)
+### *Exercise 2 — Open Set Recognition (OSR)*
 
-Dataset: **MNIST** (clases 0–7 como *known*, clases 8–9 como *unknown*).
+Dataset: **MNIST** (classes 0–7 as *known*, classes 8–9 as *unknown*).
 
-El objetivo es identificar si una muestra pertenece a una clase conocida o es un *unknown*, además de clasificarla correctamente cuando sea conocida.
+The objective is to determine whether a sample belongs to a known class or is an *unknown*, and to correctly classify it when it is known.
 
-#### Estrategias de scoring
+#### *Scoring Strategies*
 
-| Estrategia | Descripción |
+| Strategy | Description |
 |---|---|
-| **Max Class Probability** | Score = máxima probabilidad de clase predicha (Confidence Thresholding) |
-| **Distancia al centroide más cercano** | Score = distancia negativa al centroide de clase más cercano |
+| **Max Class Probability** | Score = maximum predicted class probability (Confidence Thresholding) |
+| **Distance to Nearest Centroid** | Score = negative distance to the nearest class centroid |
 
-#### Métricas de evaluación
+#### *Evaluation Metrics*
 
-- **AUROC** — Área bajo la curva ROC (Known vs Unknown detection)
-- **OSCR** — Open Set Classification Rate: acepta *y* clasifica correctamente
-- **AUPR** — Área bajo la curva Precisión-Recall (útil con desbalance)
-- **FPR@95%TPR** — Falsos positivos cuando se aceptan el 95% de los knowns
+- **AUROC** — Area Under the ROC Curve (Known vs Unknown detection)
+- **OSCR** — Open Set Classification Rate: accepts *and* classifies correctly
+- **AUPR** — Area Under the Precision–Recall Curve (useful with class imbalance)
+- **FPR@95%TPR** — False positive rate when accepting 95% of known samples
 
 ---
 
-##  Task 2 — Análisis de Equidad del sistema COMPAS
+## *Task 2 — Fairness Analysis of the COMPAS System*
 
-**Lenguaje:** R · **Formato:** R Markdown (`Task_2.Rmd`)  
-**Dataset:** `compas-scores-two-years.csv` (ProPublica — Condado de Broward, Florida)
+**Language:** R · **Format:** R Markdown (`Task_2.Rmd`)  
+**Dataset:** `compas-scores-two-years.csv` (ProPublica — Broward County, Florida)
 
-Se analiza la **equidad algorítmica** del sistema COMPAS, una herramienta usada en el sistema judicial estadounidense para estimar el riesgo de reincidencia.
+This task analyzes the **algorithmic fairness** of the COMPAS system, a tool used in the U.S. judicial system to estimate the risk of recidivism.
 
-### 2.1 Sufficiency (Calibración)
+### *2.1 Sufficiency (Calibration)*
 
-Se verifica si el `decile_score` tiene el mismo significado probabilístico entre grupos raciales:
+It is tested whether the `decile_score` has the same probabilistic meaning across racial groups:
 
 ```
 P(is_recid = 1 | decile_score = r, race = African-American)
     ≈ P(is_recid = 1 | decile_score = r, race = Caucasian)
 ```
 
-**Resultado:** COMPAS cumple la suficiencia de forma *aproximada*, pero no perfecta (e.g. para `decile_score = 4`, la tasa de reincidencia es ~44% en caucásicos y ~50% en afroamericanos).
-
-### 2.2 Separation (Igualdad de tasas de error)
-
-Se comparan **TPR** y **FPR** entre grupos mediante curvas ROC por raza. Se buscan pares de thresholds `(t_aa, t_ca)` que igualen ambas métricas con diferencia < 1%.
-
-**Resultado:** Es posible aproximar *separation* con thresholds distintos por grupo (e.g. `t_aa = 7`, `t_ca = 5`), pero esto introduce diferencias en la **PPV** (Positive Predictive Value), lo que refleja la **imposibilidad de satisfacer simultáneamente** *sufficiency* y *separation*.
-
-### 2.3 Factores de riesgo — Edad
-
-Se analiza la relación entre la edad y la tasa de reincidencia en tres grupos:
-
-| Grupo de edad | Tasa de reincidencia |
-|---|---|
-| ≤ 25 años | Alta |
-| 26–49 años | Media |
-| ≥ 50 años | Baja |
-
-**Resultado:** La edad es un factor de riesgo relevante, con una diferencia de ~25 puntos porcentuales entre el grupo más joven y el de mayor edad.
+**Result:** COMPAS satisfies sufficiency *approximately*, but not perfectly (e.g., for `decile_score = 4`, the recidivism rate is ~44% for Caucasians and ~50% for African-Americans).
 
 ---
 
-##  Tecnologías y librerías
+### *2.2 Separation (Equality of Error Rates)*
+
+**TPR** and **FPR** are compared between groups using ROC curves by race. Pairs of thresholds `(t_aa, t_ca)` are searched to equalize both metrics with a difference < 1%.
+
+**Result:** It is possible to approximate *separation* using different thresholds for each group (e.g., `t_aa = 7`, `t_ca = 5`), but this introduces differences in **PPV** (Positive Predictive Value), reflecting the **impossibility of simultaneously satisfying** *sufficiency* and *separation*.
+
+---
+
+### *2.3 Risk Factors — Age*
+
+The relationship between age and the recidivism rate is analyzed in three groups:
+
+| Age group | Recidivism rate |
+|---|---|
+| ≤ 25 years | High |
+| 26–49 years | Medium |
+| ≥ 50 years | Low |
+
+**Result:** Age is a relevant risk factor, with a difference of about **25 percentage points** between the youngest and oldest groups.
+
+---
+
+## *Technologies and Libraries*
 
 ### Python
-- `scikit-learn` — clasificadores, métricas, selección de features
-- `numpy`, `pandas` — manipulación de datos
-- `matplotlib` — visualización
+- `scikit-learn` — classifiers, metrics, feature selection
+- `numpy`, `pandas` — data manipulation
+- `matplotlib` — visualization
 
 ### R
-- `dplyr` — manipulación de datos
-- `plotly` — visualización interactiva
-- `fairness` — métricas de equidad algorítmica
-- `reshape2` — transformación de datos
+- `dplyr` — data manipulation
+- `plotly` — interactive visualization
+- `fairness` — algorithmic fairness metrics
+- `reshape2` — data transformation
 
 ---
 
-## Cómo ejecutar
+## *How to Run*
 
-### Práctica 1 (Python)
+### *Practice 1 (Python)*
+
 ```bash
-# Instalar dependencias
+# Install dependencies
 pip install numpy pandas scikit-learn matplotlib
 
-# Abrir el notebook
+# Open the notebook
 jupyter notebook EDM_Pract1_2026.ipynb
 ```
 
-### Task 2 (R)
+### *Task 2 (R)*
+
 ```r
-# Instalar dependencias
+# Install dependencies
 install.packages(c("dplyr", "plotly", "fairness", "reshape2"))
 
-# Renderizar el informe
+# Render the report
 rmarkdown::render("Task_2/Task_2.Rmd")
+```
 
 ---
 
-## Referencias
+## *References*
 
-- [ProPublica — Machine Bias (COMPAS dataset)](https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing)
-- [OpenML — BreastCancer dataset (ID: 15)](https://www.openml.org/d/15)
-- [MNIST dataset](http://yann.lecun.com/exdb/mnist/)
+- ProPublica — Machine Bias (COMPAS dataset)  
+https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing
+
+- OpenML — BreastCancer dataset (ID: 15)  
+https://www.openml.org/d/15
+
+- MNIST dataset  
+http://yann.lecun.com/exdb/mnist/
+
 - Scheirer, W. J. et al. (2013). *Toward Open Set Recognition*. IEEE TPAMI.
+
 - Chouldechova, A. (2017). *Fair prediction with disparate impact*. Big Data.
