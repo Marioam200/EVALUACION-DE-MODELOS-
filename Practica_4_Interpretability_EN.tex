@@ -1,0 +1,1330 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Task 3: Interpretability - Linear Models},
+  pdfauthor={Mario Álvarez Martínez, Marcos Carrasco Panadero, Sergio Samaniego Hernández},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Task 3: Interpretability - Linear Models}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Reliable Models - EDM-GCD}
+\author{Mario Álvarez Martínez, Marcos Carrasco Panadero, Sergio
+Samaniego Hernández}
+\date{2026-04-22}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Introduction}\label{introduction}
+
+\subsection{Context and Motivation}\label{context-and-motivation}
+
+In this task, we will address the topic of \textbf{Interpretability} of
+machine learning models. Interpretability is fundamental in many fields
+such as medicine, finance, public administration, etc., where not only
+does the model's predictive accuracy matter, but also its ability to
+explain \textbf{why} it makes certain decisions.
+
+\textbf{Key question}: How can we understand which features influence
+our model's predictions?
+
+\subsubsection{Objectives of this
+practice}\label{objectives-of-this-practice}
+
+\begin{itemize}
+\tightlist
+\item
+  Understand the principles of \textbf{interpretability} in linear
+  regression models
+\item
+  Learn to \textbf{interpret model coefficients}
+\item
+  Evaluate the \textbf{validity of interpretations} through diagnostics
+\item
+  Visualize and communicate results clearly
+\item
+  Understand the \textbf{limitations} of linear models
+\end{itemize}
+
+\subsection{The Problem: Predicting Bicycle
+Rentals}\label{the-problem-predicting-bicycle-rentals}
+
+We will use the \textbf{Bike-Sharing} dataset from the Capital Bikeshare
+system in Washington D.C. (2011-2012).
+
+\subsubsection{Research question}\label{research-question}
+
+\emph{What are the factors that influence the number of bicycles rented
+daily and what is the impact of each of these factors?}
+
+\subsubsection{Dataset variables}\label{dataset-variables}
+
+The dataset contains aggregated \textbf{daily} information about bicycle
+rentals:
+
+\textbf{Dependent variable (target):} - \texttt{cnt}: Total number of
+bicycles rented (casual + registered)
+
+\textbf{Independent variables (features):} - \texttt{season}: Season (1:
+spring, 2: summer, 3: fall, 4: winter) - \texttt{yr}: Year (0: 2011, 1:
+2012) - \texttt{mnth}: Month (1-12) - \texttt{holiday}: Is holiday (0/1)
+- \texttt{weekday}: Day of week (0-6) - \texttt{workingday}: Is working
+day (0/1) - \texttt{weathersit}: Weather condition (1: clear, 2: cloudy,
+3: light rain, 4: heavy rain) - \texttt{temp}: Normalized temperature
+(0-1) - \texttt{atemp}: Normalized apparent temperature (0-1) -
+\texttt{hum}: Normalized humidity (0-1) - \texttt{windspeed}: Normalized
+wind speed (0-1)
+
+\subsection{Initial hypotheses}\label{initial-hypotheses}
+
+Based on theory and common sense, we expect:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Positive effect of temperature}: Warmer days → more rentals
+\item
+  \textbf{Negative effect of bad weather}: Rain/snow → fewer rentals
+\item
+  \textbf{Effect of day of week}: Differences between weekdays and
+  weekends
+\item
+  \textbf{Effect of season}: Variations according to time of year
+\item
+  \textbf{Effect of year}: Possible growth from 2011 to 2012
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{The Linear Model}\label{the-linear-model}
+
+\subsection{Loading and exploring the
+dataset}\label{loading-and-exploring-the-dataset}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Load the dataset}
+\NormalTok{data }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"day.csv"}\NormalTok{)}
+
+\CommentTok{\# Initial exploration}
+\FunctionTok{head}\NormalTok{(data, }\DecValTok{10}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    instant     dteday season yr mnth holiday weekday workingday weathersit
+## 1        1 2011-01-01      1  0    1       0       6          0          2
+## 2        2 2011-01-02      1  0    1       0       0          0          2
+## 3        3 2011-01-03      1  0    1       0       1          1          1
+## 4        4 2011-01-04      1  0    1       0       2          1          1
+## 5        5 2011-01-05      1  0    1       0       3          1          1
+## 6        6 2011-01-06      1  0    1       0       4          1          1
+## 7        7 2011-01-07      1  0    1       0       5          1          2
+## 8        8 2011-01-08      1  0    1       0       6          0          2
+## 9        9 2011-01-09      1  0    1       0       0          0          1
+## 10      10 2011-01-10      1  0    1       0       1          1          1
+##        temp    atemp      hum windspeed casual registered  cnt
+## 1  0.344167 0.363625 0.805833 0.1604460    331        654  985
+## 2  0.363478 0.353739 0.696087 0.2485390    131        670  801
+## 3  0.196364 0.189405 0.437273 0.2483090    120       1229 1349
+## 4  0.200000 0.212122 0.590435 0.1602960    108       1454 1562
+## 5  0.226957 0.229270 0.436957 0.1869000     82       1518 1600
+## 6  0.204348 0.233209 0.518261 0.0895652     88       1518 1606
+## 7  0.196522 0.208839 0.498696 0.1687260    148       1362 1510
+## 8  0.165000 0.162254 0.535833 0.2668040     68        891  959
+## 9  0.138333 0.116175 0.434167 0.3619500     54        768  822
+## 10 0.150833 0.150888 0.482917 0.2232670     41       1280 1321
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{dim}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 731  16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{str}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    731 obs. of  16 variables:
+##  $ instant   : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ dteday    : chr  "2011-01-01" "2011-01-02" "2011-01-03" "2011-01-04" ...
+##  $ season    : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ yr        : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ mnth      : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ holiday   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ weekday   : int  6 0 1 2 3 4 5 6 0 1 ...
+##  $ workingday: int  0 0 1 1 1 1 1 0 0 1 ...
+##  $ weathersit: int  2 2 1 1 1 1 2 2 1 1 ...
+##  $ temp      : num  0.344 0.363 0.196 0.2 0.227 ...
+##  $ atemp     : num  0.364 0.354 0.189 0.212 0.229 ...
+##  $ hum       : num  0.806 0.696 0.437 0.59 0.437 ...
+##  $ windspeed : num  0.16 0.249 0.248 0.16 0.187 ...
+##  $ casual    : int  331 131 120 108 82 88 148 68 54 41 ...
+##  $ registered: int  654 670 1229 1454 1518 1518 1362 891 768 1280 ...
+##  $ cnt       : int  985 801 1349 1562 1600 1606 1510 959 822 1321 ...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Descriptive statistics of main variables}
+\FunctionTok{summary}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     instant         dteday              season            yr        
+##  Min.   :  1.0   Length:731         Min.   :1.000   Min.   :0.0000  
+##  1st Qu.:183.5   Class :character   1st Qu.:2.000   1st Qu.:0.0000  
+##  Median :366.0   Mode  :character   Median :3.000   Median :1.0000  
+##  Mean   :366.0                      Mean   :2.497   Mean   :0.5007  
+##  3rd Qu.:548.5                      3rd Qu.:3.000   3rd Qu.:1.0000  
+##  Max.   :731.0                      Max.   :4.000   Max.   :1.0000  
+##       mnth          holiday           weekday        workingday   
+##  Min.   : 1.00   Min.   :0.00000   Min.   :0.000   Min.   :0.000  
+##  1st Qu.: 4.00   1st Qu.:0.00000   1st Qu.:1.000   1st Qu.:0.000  
+##  Median : 7.00   Median :0.00000   Median :3.000   Median :1.000  
+##  Mean   : 6.52   Mean   :0.02873   Mean   :2.997   Mean   :0.684  
+##  3rd Qu.:10.00   3rd Qu.:0.00000   3rd Qu.:5.000   3rd Qu.:1.000  
+##  Max.   :12.00   Max.   :1.00000   Max.   :6.000   Max.   :1.000  
+##    weathersit         temp             atemp              hum        
+##  Min.   :1.000   Min.   :0.05913   Min.   :0.07907   Min.   :0.0000  
+##  1st Qu.:1.000   1st Qu.:0.33708   1st Qu.:0.33784   1st Qu.:0.5200  
+##  Median :1.000   Median :0.49833   Median :0.48673   Median :0.6267  
+##  Mean   :1.395   Mean   :0.49538   Mean   :0.47435   Mean   :0.6279  
+##  3rd Qu.:2.000   3rd Qu.:0.65542   3rd Qu.:0.60860   3rd Qu.:0.7302  
+##  Max.   :3.000   Max.   :0.86167   Max.   :0.84090   Max.   :0.9725  
+##    windspeed           casual         registered        cnt      
+##  Min.   :0.02239   Min.   :   2.0   Min.   :  20   Min.   :  22  
+##  1st Qu.:0.13495   1st Qu.: 315.5   1st Qu.:2497   1st Qu.:3152  
+##  Median :0.18097   Median : 713.0   Median :3662   Median :4548  
+##  Mean   :0.19049   Mean   : 848.2   Mean   :3656   Mean   :4504  
+##  3rd Qu.:0.23321   3rd Qu.:1096.0   3rd Qu.:4776   3rd Qu.:5956  
+##  Max.   :0.50746   Max.   :3410.0   Max.   :6946   Max.   :8714
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Focus on the target variable}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Statistics of cnt (daily rentals):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Statistics of cnt (daily rentals):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Mean:"}\NormalTok{, }\FunctionTok{mean}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{cnt), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Mean: 4504.349
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Standard deviation:"}\NormalTok{, }\FunctionTok{sd}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{cnt), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Standard deviation: 1937.211
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Minimum:"}\NormalTok{, }\FunctionTok{min}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{cnt), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Minimum: 22
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Maximum:"}\NormalTok{, }\FunctionTok{max}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{cnt), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Maximum: 8714
+\end{verbatim}
+
+\subsection{Data preparation}\label{data-preparation}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# IMPORTANT: Convert categorical variables to factors for better interpretation}
+
+\CommentTok{\# Create copies to work with}
+\NormalTok{data\_model }\OtherTok{\textless{}{-}}\NormalTok{ data}
+
+\CommentTok{\# Convert categorical variables to factors}
+\CommentTok{\# Convert categorical variables to factors}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{season }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{season, }
+                            \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{),}
+                            \AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Spring"}\NormalTok{, }\StringTok{"Summer"}\NormalTok{, }\StringTok{"Fall"}\NormalTok{, }\StringTok{"Winter"}\NormalTok{))}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{yr }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{yr, }
+                        \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{),}
+                        \AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"2011"}\NormalTok{, }\StringTok{"2012"}\NormalTok{))}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{mnth }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{mnth)}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{weekday }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{weekday)}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{weathersit }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{weathersit,}
+                                \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{),}
+                                \AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Clear"}\NormalTok{, }\StringTok{"Mist"}\NormalTok{, }\StringTok{"LightRain"}\NormalTok{, }\StringTok{"HeavyRain"}\NormalTok{))}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{holiday }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{holiday)}
+\NormalTok{data\_model}\SpecialCharTok{$}\NormalTok{workingday }\OtherTok{\textless{}{-}} \FunctionTok{factor}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{workingday)}
+
+\CommentTok{\# Visualize the distribution of the target variable}
+\NormalTok{p1 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(data\_model, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ cnt)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_histogram}\NormalTok{(}\AttributeTok{bins =} \DecValTok{30}\NormalTok{, }\AttributeTok{fill =} \StringTok{"steelblue"}\NormalTok{, }\AttributeTok{color =} \StringTok{"black"}\NormalTok{, }\AttributeTok{alpha =} \FloatTok{0.7}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Distribution of daily rentals (cnt)"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Number of bicycles rented"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Frequency"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{plot.title =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{12}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{))}
+
+\NormalTok{p2 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(data\_model, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{sample =}\NormalTok{ cnt)) }\SpecialCharTok{+}
+  \FunctionTok{stat\_qq}\NormalTok{(}\AttributeTok{color =} \StringTok{"steelblue"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{stat\_qq\_line}\NormalTok{(}\AttributeTok{color =} \StringTok{"red"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Q{-}Q Plot: Normality of cnt"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Theoretical Quantiles"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Sample Quantiles"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{plot.title =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{12}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{))}
+
+\FunctionTok{grid.arrange}\NormalTok{(p1, p2, }\AttributeTok{ncol =} \DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Practica_4_Interpretability_EN_files/figure-latex/data_preparation-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# We observe that the distribution of cnt is approximately normal, }
+\CommentTok{\# which justifies the use of linear regression.}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Correlation analysis}\label{correlation-analysis}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Select only numeric variables for correlation matrix}
+\NormalTok{numeric\_cols }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"temp"}\NormalTok{, }\StringTok{"atemp"}\NormalTok{, }\StringTok{"hum"}\NormalTok{, }\StringTok{"windspeed"}\NormalTok{, }\StringTok{"cnt"}\NormalTok{)}
+\NormalTok{cor\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(data[, numeric\_cols])}
+
+\CommentTok{\# Visualize correlation matrix}
+\FunctionTok{corrplot}\NormalTok{(cor\_matrix, }\AttributeTok{method =} \StringTok{"circle"}\NormalTok{, }\AttributeTok{type =} \StringTok{"upper"}\NormalTok{, }
+         \AttributeTok{diag =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{addCoef.col =} \StringTok{"black"}\NormalTok{, }\AttributeTok{tl.cex =} \FloatTok{0.8}\NormalTok{,}
+         \AttributeTok{title =} \StringTok{"Correlation matrix {-} Numeric variables"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Practica_4_Interpretability_EN_files/figure-latex/correlation-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# {-} Temperature (temp) and apparent temperature (atemp) are highly correlated}
+\CommentTok{\# {-} There is multicollinearity between temp and atemp (r \textgreater{} 0.98)}
+\CommentTok{\# {-} cnt is positively correlated with temperature}
+\CommentTok{\# {-} cnt is negatively correlated with humidity and wind speed}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Fitting the Multiple Linear
+Model}\label{fitting-the-multiple-linear-model}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# We fit a linear model that includes:}
+\CommentTok{\# {-} Numeric variables: temperature, humidity, wind speed}
+\CommentTok{\# {-} Categorical variables: season, year, weather condition}
+\CommentTok{\# {-} We exclude \textquotesingle{}instant\textquotesingle{}, \textquotesingle{}dteday\textquotesingle{}, \textquotesingle{}casual\textquotesingle{} and \textquotesingle{}registered\textquotesingle{} (irrelevant/redundant variables)}
+\CommentTok{\# {-} We exclude \textquotesingle{}atemp\textquotesingle{} due to multicollinearity with \textquotesingle{}temp\textquotesingle{}}
+
+\NormalTok{model }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(cnt }\SpecialCharTok{\textasciitilde{}}\NormalTok{ temp }\SpecialCharTok{+}\NormalTok{ hum }\SpecialCharTok{+}\NormalTok{ windspeed }\SpecialCharTok{+}\NormalTok{ season }\SpecialCharTok{+}\NormalTok{ yr }\SpecialCharTok{+}\NormalTok{ weathersit }\SpecialCharTok{+} 
+\NormalTok{              holiday }\SpecialCharTok{+}\NormalTok{ workingday, }
+            \AttributeTok{data =}\NormalTok{ data\_model)}
+
+\CommentTok{\# Model summary}
+\FunctionTok{summary}\NormalTok{(model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = cnt ~ temp + hum + windspeed + season + yr + weathersit + 
+##     holiday + workingday, data = data_model)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3677.3  -378.9    67.4   475.7  3347.1 
+## 
+## Coefficients:
+##                     Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)          1586.95     226.75   6.999 5.93e-12 ***
+## temp                 5108.07     306.98  16.640  < 2e-16 ***
+## hum                 -1325.64     295.07  -4.493 8.19e-06 ***
+## windspeed           -2795.28     428.06  -6.530 1.24e-10 ***
+## seasonSummer         1137.94     113.55  10.021  < 2e-16 ***
+## seasonFall            844.10     149.97   5.628 2.61e-08 ***
+## seasonWinter         1545.59      96.67  15.988  < 2e-16 ***
+## yr2012               2013.71      61.75  32.610  < 2e-16 ***
+## weathersitMist       -426.72      81.24  -5.253 1.98e-07 ***
+## weathersitLightRain -1916.95     207.31  -9.247  < 2e-16 ***
+## holiday1             -624.01     188.44  -3.311 0.000974 ***
+## workingday1           118.19      67.92   1.740 0.082232 .  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 822.2 on 719 degrees of freedom
+## Multiple R-squared:  0.8226, Adjusted R-squared:  0.8199 
+## F-statistic: 303.1 on 11 and 719 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Extract key information}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== INITIAL INTERPRETATION ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === INITIAL INTERPRETATION ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"R{-}squared:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{r.squared, }\DecValTok{4}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## R-squared: 0.8226
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Adjusted R{-}squared:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{adj.r.squared, }\DecValTok{4}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Adjusted R-squared: 0.8199
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"F{-}statistic:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{fstatistic[}\DecValTok{1}\NormalTok{], }\DecValTok{4}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## F-statistic: 303.0791
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# {-} R{-}squared indicates what percentage of variance we explain}
+\CommentTok{\# {-} Adjusted R{-}squared penalizes for number of variables}
+\CommentTok{\# {-} F{-}statistic tests if the model is globally significant (p{-}value \textless{} 0.05)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Interpretation of
+coefficients}\label{interpretation-of-coefficients}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Extract coefficients}
+\NormalTok{coef\_table }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)), }\DecValTok{4}\NormalTok{))}
+\NormalTok{coef\_table}\SpecialCharTok{$}\NormalTok{Variable }\OtherTok{\textless{}{-}} \FunctionTok{rownames}\NormalTok{(coef\_table)}
+\FunctionTok{rownames}\NormalTok{(coef\_table) }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+\NormalTok{coef\_table }\OtherTok{\textless{}{-}}\NormalTok{ coef\_table[, }\FunctionTok{c}\NormalTok{(}\DecValTok{5}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{, }\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{)]}
+\FunctionTok{colnames}\NormalTok{(coef\_table) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Variable"}\NormalTok{, }\StringTok{"Coefficient"}\NormalTok{, }\StringTok{"Std.Error"}\NormalTok{, }\StringTok{"t{-}value"}\NormalTok{, }\StringTok{"p{-}value"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(coef\_table)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##               Variable Coefficient Std.Error t-value p-value
+## 1          (Intercept)   1586.9452  226.7473  6.9987  0.0000
+## 2                 temp   5108.0686  306.9827 16.6396  0.0000
+## 3                  hum  -1325.6366  295.0664 -4.4927  0.0000
+## 4            windspeed  -2795.2845  428.0615 -6.5301  0.0000
+## 5         seasonSummer   1137.9377  113.5537 10.0211  0.0000
+## 6           seasonFall    844.1024  149.9701  5.6285  0.0000
+## 7         seasonWinter   1545.5895   96.6724 15.9879  0.0000
+## 8               yr2012   2013.7111   61.7519 32.6097  0.0000
+## 9       weathersitMist   -426.7212   81.2383 -5.2527  0.0000
+## 10 weathersitLightRain  -1916.9498  207.3096 -9.2468  0.0000
+## 11            holiday1   -624.0107  188.4392 -3.3115  0.0010
+## 12         workingday1    118.1934   67.9151  1.7403  0.0822
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== INTERPRETATION OF COEFFICIENTS ===}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === INTERPRETATION OF COEFFICIENTS ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Intercept (β₀):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Intercept (β₀):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Value: "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\DecValTok{1}\NormalTok{], }\DecValTok{2}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Value:  1586.95
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Meaning: Expected number of rentals when all continuous variables are 0}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Meaning: Expected number of rentals when all continuous variables are 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  (Has no practical interpretation in this case)}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   (Has no practical interpretation in this case)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Temperature (temp):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Temperature (temp):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Coefficient: "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"temp"}\NormalTok{], }\DecValTok{2}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Coefficient:  5108.07
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Interpretation: For each increase of 1 unit in normalized temperature,}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Interpretation: For each increase of 1 unit in normalized temperature,
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"                  the number of rentals increases by approx."}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"temp"}\NormalTok{], }\DecValTok{0}\NormalTok{), }\StringTok{"bicycles}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                   the number of rentals increases by approx. 5108 bicycles
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Significance: "}\NormalTok{, }\ControlFlowTok{if}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"temp"}\NormalTok{, }\StringTok{"Pr(\textgreater{}|t|)"}\NormalTok{] }\SpecialCharTok{\textless{}} \FloatTok{0.05}\NormalTok{) }
+                            \StringTok{"YES (p \textless{} 0.05)"} \ControlFlowTok{else} \StringTok{"NO"}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Significance:  YES (p < 0.05)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Humidity (hum):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Humidity (hum):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Coefficient: "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"hum"}\NormalTok{], }\DecValTok{2}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Coefficient:  -1325.64
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Interpretation: For each increase of 1 unit in humidity,}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Interpretation: For each increase of 1 unit in humidity,
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"                  the number of rentals decreases by approx."}\NormalTok{, }\FunctionTok{abs}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"hum"}\NormalTok{], }\DecValTok{0}\NormalTok{)), }\StringTok{"bicycles}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                   the number of rentals decreases by approx. 1326 bicycles
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Significance: "}\NormalTok{, }\ControlFlowTok{if}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"hum"}\NormalTok{, }\StringTok{"Pr(\textgreater{}|t|)"}\NormalTok{] }\SpecialCharTok{\textless{}} \FloatTok{0.05}\NormalTok{) }
+                            \StringTok{"YES (p \textless{} 0.05)"} \ControlFlowTok{else} \StringTok{"NO"}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Significance:  YES (p < 0.05)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Wind speed (windspeed):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Wind speed (windspeed):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Coefficient: "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"windspeed"}\NormalTok{], }\DecValTok{2}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Coefficient:  -2795.28
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Interpretation: For each increase of 1 unit in wind speed,}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Interpretation: For each increase of 1 unit in wind speed,
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"                  the number of rentals decreases by approx."}\NormalTok{, }\FunctionTok{abs}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"windspeed"}\NormalTok{], }\DecValTok{0}\NormalTok{)), }\StringTok{"bicycles}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                   the number of rentals decreases by approx. 2795 bicycles
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Significance: "}\NormalTok{, }\ControlFlowTok{if}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{coefficients[}\StringTok{"windspeed"}\NormalTok{, }\StringTok{"Pr(\textgreater{}|t|)"}\NormalTok{] }\SpecialCharTok{\textless{}} \FloatTok{0.05}\NormalTok{) }
+                            \StringTok{"YES (p \textless{} 0.05)"} \ControlFlowTok{else} \StringTok{"NO"}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Significance:  YES (p < 0.05)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Season (categorical variables):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Season (categorical variables):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{for}\NormalTok{(season }\ControlFlowTok{in} \FunctionTok{c}\NormalTok{(}\StringTok{"seasonSummer"}\NormalTok{, }\StringTok{"seasonFall"}\NormalTok{, }\StringTok{"seasonWinter"}\NormalTok{)) \{}
+  \ControlFlowTok{if}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[season])) \{}
+    \FunctionTok{cat}\NormalTok{(}\StringTok{"  "}\NormalTok{, season, }\StringTok{": "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[season], }\DecValTok{0}\NormalTok{), }\StringTok{"bicycles vs. Spring}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   seasonSummer: 1138bicycles vs. Spring
+##   seasonFall: 844bicycles vs. Spring
+##   seasonWinter: 1546bicycles vs. Spring
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Year (yr2012):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Year (yr2012):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Coefficient: "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"yr2012"}\NormalTok{], }\DecValTok{0}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Coefficient:  2014
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"  Interpretation: In 2012 there are approx."}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[}\StringTok{"yr2012"}\NormalTok{], }\DecValTok{0}\NormalTok{), }
+    \StringTok{"more rentals than in 2011}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Interpretation: In 2012 there are approx. 2014 more rentals than in 2011
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Weather condition (weathersit):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Weather condition (weathersit):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{for}\NormalTok{(weather }\ControlFlowTok{in} \FunctionTok{c}\NormalTok{(}\StringTok{"weathersitMist"}\NormalTok{, }\StringTok{"weathersitLightRain"}\NormalTok{, }\StringTok{"weathersitHeavyRain"}\NormalTok{)) \{}
+  \ControlFlowTok{if}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[weather])) \{}
+    \FunctionTok{cat}\NormalTok{(}\StringTok{"  "}\NormalTok{, weather, }\StringTok{": "}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model)[weather], }\DecValTok{0}\NormalTok{), }
+        \StringTok{"bicycles vs. Clear weather}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{)}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   weathersitMist: -427bicycles vs. Clear weather
+##   weathersitLightRain: -1917bicycles vs. Clear weather
+\end{verbatim}
+
+\subsection{Model diagnostics}\label{model-diagnostics}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# IMPORTANT: Before interpreting the coefficients, we must verify that}
+\CommentTok{\# the assumptions of linear regression are met}
+
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{2}\NormalTok{))}
+\FunctionTok{plot}\NormalTok{(model)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Practica_4_Interpretability_EN_files/figure-latex/residuals_diagnostics-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# We verify:}
+\CommentTok{\# 1. Residuals vs Fitted: Are the errors random? (horizontal line)}
+\CommentTok{\# 2. Normal Q{-}Q: Are the residuals normal? (points on the line)}
+\CommentTok{\# 3. Scale{-}Location: Is there homoscedasticity? (constant variance)}
+\CommentTok{\# 4. Residuals vs Leverage: Are there influential outliers?}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Shapiro{-}Wilk test for normality of residuals}
+\NormalTok{shapiro\_test }\OtherTok{\textless{}{-}} \FunctionTok{shapiro.test}\NormalTok{(}\FunctionTok{residuals}\NormalTok{(model))}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Shapiro{-}Wilk test for normality of residuals:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Shapiro-Wilk test for normality of residuals:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"p{-}value:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(shapiro\_test}\SpecialCharTok{$}\NormalTok{p.value, }\DecValTok{4}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## p-value: 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{(shapiro\_test}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}} \FloatTok{0.05}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"CONCLUSION: Residuals are approximately normal (p \textgreater{} 0.05)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"CONCLUSION: Residuals are NOT normal (p \textless{} 0.05)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## CONCLUSION: Residuals are NOT normal (p < 0.05)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Breusch{-}Pagan test for homoscedasticity}
+\NormalTok{bp\_test }\OtherTok{\textless{}{-}} \FunctionTok{bptest}\NormalTok{(model)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{Breusch{-}Pagan test for homoscedasticity:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Breusch-Pagan test for homoscedasticity:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"p{-}value:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(bp\_test}\SpecialCharTok{$}\NormalTok{p.value, }\DecValTok{4}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## p-value: 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{(bp\_test}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}} \FloatTok{0.05}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"CONCLUSION: There is homoscedasticity (p \textgreater{} 0.05)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"CONCLUSION: There is NO homoscedasticity (p \textless{} 0.05)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## CONCLUSION: There is NO homoscedasticity (p < 0.05)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# VIF (Variance Inflation Factor) to detect multicollinearity}
+\NormalTok{vif\_values }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{vif}\NormalTok{(model)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{VIF (Variance Inflation Factor) {-} Multicollinearity:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## VIF (Variance Inflation Factor) - Multicollinearity:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{round}\NormalTok{(vif\_values, }\DecValTok{3}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##             GVIF Df GVIF^(1/(2*Df))
+## temp       3.410  1           1.847
+## hum        1.907  1           1.381
+## windspeed  1.189  1           1.090
+## season     3.538  3           1.234
+## yr         1.031  1           1.015
+## weathersit 1.792  2           1.157
+## holiday    1.071  1           1.035
+## workingday 1.078  1           1.038
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{Rule: VIF \textgreater{} 5{-}10 indicates multicollinearity problems}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Rule: VIF > 5-10 indicates multicollinearity problems
+\end{verbatim}
+
+\subsection{Visualization of effects}\label{visualization-of-effects}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Extract significant coefficients to visualize}
+\NormalTok{coef\_df }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{variable =} \FunctionTok{names}\NormalTok{(}\FunctionTok{coef}\NormalTok{(model))[}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{],  }\CommentTok{\# Exclude intercept}
+  \AttributeTok{coefficient =} \FunctionTok{coef}\NormalTok{(model)[}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{],}
+  \AttributeTok{se =} \FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{coefficients[}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{]}
+\NormalTok{)}
+
+\CommentTok{\# Filter only significant coefficients}
+\NormalTok{coef\_df}\SpecialCharTok{$}\NormalTok{pvalue }\OtherTok{\textless{}{-}} \FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{coefficients[}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{, }\DecValTok{4}\NormalTok{]}
+\NormalTok{coef\_df\_sig }\OtherTok{\textless{}{-}}\NormalTok{ coef\_df[coef\_df}\SpecialCharTok{$}\NormalTok{pvalue }\SpecialCharTok{\textless{}} \FloatTok{0.05}\NormalTok{, ]}
+\NormalTok{coef\_df\_sig }\OtherTok{\textless{}{-}}\NormalTok{ coef\_df\_sig[}\FunctionTok{order}\NormalTok{(coef\_df\_sig}\SpecialCharTok{$}\NormalTok{coefficient), ]}
+
+\CommentTok{\# Plot}
+\FunctionTok{ggplot}\NormalTok{(coef\_df\_sig, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{reorder}\NormalTok{(variable, coefficient), }\AttributeTok{y =}\NormalTok{ coefficient)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size =} \DecValTok{3}\NormalTok{, }\AttributeTok{color =} \StringTok{"steelblue"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_errorbar}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{ymin =}\NormalTok{ coefficient }\SpecialCharTok{{-}} \FloatTok{1.96}\SpecialCharTok{*}\NormalTok{se, }
+                    \AttributeTok{ymax =}\NormalTok{ coefficient }\SpecialCharTok{+} \FloatTok{1.96}\SpecialCharTok{*}\NormalTok{se), }
+                \AttributeTok{width =} \FloatTok{0.2}\NormalTok{, }\AttributeTok{color =} \StringTok{"steelblue"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{, }\AttributeTok{color =} \StringTok{"red"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{coord\_flip}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Linear Model Coefficients (only significant, p \textless{} 0.05)"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Variables"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Coefficient (95\% CI)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{plot.title =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{12}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Practica_4_Interpretability_EN_files/figure-latex/coefficients_plot-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# This graph shows:}
+\CommentTok{\# {-} Magnitude of the effect of each variable (Y axis)}
+\CommentTok{\# {-} Associated uncertainty (error bars = 95\% CI)}
+\CommentTok{\# {-} Only statistically significant variables}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Effects of categorical variables}
+\CommentTok{\# Temperature}
+\NormalTok{temp\_effect }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{temp =} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\FloatTok{0.1}\NormalTok{),}
+  \AttributeTok{predicted =} \FunctionTok{predict}\NormalTok{(model, }
+                      \AttributeTok{newdata =} \FunctionTok{data.frame}\NormalTok{(}
+                        \AttributeTok{temp =} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\FloatTok{0.1}\NormalTok{),}
+                        \AttributeTok{hum =} \FunctionTok{mean}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{hum),}
+                        \AttributeTok{windspeed =} \FunctionTok{mean}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{windspeed),}
+                        \AttributeTok{season =} \StringTok{"Spring"}\NormalTok{,}
+                        \AttributeTok{yr =} \StringTok{"2011"}\NormalTok{,}
+                        \AttributeTok{weathersit =} \StringTok{"Clear"}\NormalTok{,}
+                        \AttributeTok{holiday =} \StringTok{"0"}\NormalTok{,}
+                        \AttributeTok{workingday =} \StringTok{"1"}
+\NormalTok{                      ))}
+\NormalTok{)}
+
+\NormalTok{p1 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(temp\_effect, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ temp, }\AttributeTok{y =}\NormalTok{ predicted)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{color =} \StringTok{"steelblue"}\NormalTok{, }\AttributeTok{size =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size =} \DecValTok{3}\NormalTok{, }\AttributeTok{color =} \StringTok{"steelblue"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Effect of Temperature on Rentals"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Normalized temperature"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Predicted rentals"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{plot.title =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{11}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{))}
+
+\CommentTok{\# By season}
+\NormalTok{season\_effect }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{season =} \FunctionTok{factor}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"Spring"}\NormalTok{, }\StringTok{"Summer"}\NormalTok{, }\StringTok{"Fall"}\NormalTok{, }\StringTok{"Winter"}\NormalTok{),}
+                  \AttributeTok{levels =} \FunctionTok{levels}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{season)),}
+  \AttributeTok{predicted =} \FunctionTok{predict}\NormalTok{(model,}
+                      \AttributeTok{newdata =} \FunctionTok{data.frame}\NormalTok{(}
+                        \AttributeTok{season =} \FunctionTok{factor}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"Spring"}\NormalTok{, }\StringTok{"Summer"}\NormalTok{, }\StringTok{"Fall"}\NormalTok{, }\StringTok{"Winter"}\NormalTok{),}
+                                      \AttributeTok{levels =} \FunctionTok{levels}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{season)),}
+                        \AttributeTok{temp =} \FunctionTok{mean}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{temp),}
+                        \AttributeTok{hum =} \FunctionTok{mean}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{hum),}
+                        \AttributeTok{windspeed =} \FunctionTok{mean}\NormalTok{(data\_model}\SpecialCharTok{$}\NormalTok{windspeed),}
+                        \AttributeTok{yr =} \StringTok{"2011"}\NormalTok{,}
+                        \AttributeTok{weathersit =} \StringTok{"Clear"}\NormalTok{,}
+                        \AttributeTok{holiday =} \StringTok{"0"}\NormalTok{,}
+                        \AttributeTok{workingday =} \StringTok{"1"}
+\NormalTok{                      ))}
+\NormalTok{)}
+
+\NormalTok{p2 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(season\_effect, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ season, }\AttributeTok{y =}\NormalTok{ predicted, }\AttributeTok{fill =}\NormalTok{ season)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{, }\AttributeTok{color =} \StringTok{"black"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_manual}\NormalTok{(}\AttributeTok{values =} \FunctionTok{c}\NormalTok{(}\StringTok{"Spring"} \OtherTok{=} \StringTok{"\#90EE90"}\NormalTok{, }
+                               \StringTok{"Summer"} \OtherTok{=} \StringTok{"\#FFD700"}\NormalTok{,}
+                               \StringTok{"Fall"} \OtherTok{=} \StringTok{"\#FF6347"}\NormalTok{,}
+                               \StringTok{"Winter"} \OtherTok{=} \StringTok{"\#87CEEB"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Effect of Season on Rentals"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Season"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Predicted rentals"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{plot.title =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{11}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{),}
+        \AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+
+\FunctionTok{grid.arrange}\NormalTok{(p1, p2, }\AttributeTok{ncol =} \DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Practica_4_Interpretability_EN_files/figure-latex/categorical_variable_effects-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# These graphs show:}
+\CommentTok{\# {-} How model predictions vary with independent variables}
+\CommentTok{\# {-} The effect is linear (straight line) for continuous variables}
+\CommentTok{\# {-} Marked differences between categories for categorical variables}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Model summary}\label{model-summary}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"=== EXECUTIVE MODEL SUMMARY ===}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## === EXECUTIVE MODEL SUMMARY ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Goodness of fit:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Goodness of fit:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-} R{-}squared:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{r.squared }\SpecialCharTok{*} \DecValTok{100}\NormalTok{, }\DecValTok{1}\NormalTok{), }
+    \StringTok{"\% of variance explained}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## - R-squared: 82.3 % of variance explained
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-} Adjusted R{-}squared:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{summary}\NormalTok{(model)}\SpecialCharTok{$}\NormalTok{adj.r.squared }\SpecialCharTok{*} \DecValTok{100}\NormalTok{, }\DecValTok{1}\NormalTok{), }\StringTok{"\%}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## - Adjusted R-squared: 82 %
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-} RMSE:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sum}\NormalTok{(}\FunctionTok{residuals}\NormalTok{(model)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{df.residual}\NormalTok{(model)), }\DecValTok{2}\NormalTok{), }
+    \StringTok{"bicycles}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## - RMSE: 822.16 bicycles
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Validated assumptions:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Validated assumptions:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-} Normality of residuals:"}\NormalTok{, }
+    \ControlFlowTok{if}\NormalTok{(shapiro\_test}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}} \FloatTok{0.05}\NormalTok{) }\StringTok{"✓ YES"} \ControlFlowTok{else} \StringTok{"✗ NO"}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## - Normality of residuals: ✗ NO
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-} Homoscedasticity:"}\NormalTok{, }
+    \ControlFlowTok{if}\NormalTok{(bp\_test}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}} \FloatTok{0.05}\NormalTok{) }\StringTok{"✓ YES"} \ControlFlowTok{else} \StringTok{"✗ NO"}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## - Homoscedasticity: ✗ NO
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-} Multicollinearity:"}\NormalTok{, }
+    \ControlFlowTok{if}\NormalTok{(}\FunctionTok{max}\NormalTok{(vif\_values) }\SpecialCharTok{\textless{}} \DecValTok{5}\NormalTok{) }\StringTok{"✓ Acceptable"} \ControlFlowTok{else} \StringTok{"✗ Problems"}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## - Multicollinearity: ✓ Acceptable
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Most important variables (coefficient \textgreater{} 500 in absolute value):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Most important variables (coefficient > 500 in absolute value):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{important\_coefs }\OtherTok{\textless{}{-}} \FunctionTok{coef}\NormalTok{(model)[}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{]}
+\NormalTok{important\_coefs }\OtherTok{\textless{}{-}}\NormalTok{ important\_coefs[}\FunctionTok{abs}\NormalTok{(important\_coefs) }\SpecialCharTok{\textgreater{}} \DecValTok{500}\NormalTok{]}
+\ControlFlowTok{for}\NormalTok{(var }\ControlFlowTok{in} \FunctionTok{names}\NormalTok{(important\_coefs)) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"  {-}"}\NormalTok{, var, }\StringTok{":"}\NormalTok{, }\FunctionTok{round}\NormalTok{(important\_coefs[var], }\DecValTok{0}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   - temp : 5108 
+##   - hum : -1326 
+##   - windspeed : -2795 
+##   - seasonSummer : 1138 
+##   - seasonFall : 844 
+##   - seasonWinter : 1546 
+##   - yr2012 : 2014 
+##   - weathersitLightRain : -1917 
+##   - holiday1 : -624
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# MEMORY }\AlertTok{NOTE}\CommentTok{:}
+\CommentTok{\# The model is relatively good but could be improved:}
+\CommentTok{\# {-} Considering non{-}linear relationships}
+\CommentTok{\# {-} Adding interaction terms}
+\CommentTok{\# {-} Using regularization techniques (Ridge, Lasso)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Notes for the next
+section}\label{notes-for-the-next-section}
+
+\textbf{For whoever continues with the next section:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Data is prepared and model fitted
+\item
+  The model is reasonably interpretable (R² ≈ 0.73)
+\item
+  There are some categorical variables that could be explored further
+\item
+  Interaction terms can be considered (e.g: temperature × season)
+\item
+  The following sections should include:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Model validation on test data
+  \item
+    Analysis of relative importance of variables
+  \item
+    Comparison with alternative models
+  \item
+    Application to new predictions
+  \end{itemize}
+\end{enumerate}
+
+\textbf{Code to load this model in the next section:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# load("linear\_model\_bike.RData")  \# If the model is saved}
+\CommentTok{\# The model is called: model}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

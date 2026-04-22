@@ -4,18 +4,16 @@ subtitle: "Reliable Models - EDM-GCD"
 author: "Mario Álvarez Martínez, Marcos Carrasco Panadero, Sergio Samaniego Hernández"
 date: "`r Sys.Date()`"
 output:
-  html_document:
+  pdf_document:
     toc: true
     toc_depth: 3
     number_sections: true
-    theme: cosmo
-    highlight: tango
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 # Load necessary libraries
-library(tidyverse)
+library(dplyr)
 library(ggplot2)
 library(gridExtra)
 library(corrplot)
@@ -118,13 +116,17 @@ cat("Maximum:", max(data$cnt), "\n")
 data_model <- data
 
 # Convert categorical variables to factors
+# Convert categorical variables to factors
 data_model$season <- factor(data_model$season, 
+                            levels = c(1, 2, 3, 4),
                             labels = c("Spring", "Summer", "Fall", "Winter"))
 data_model$yr <- factor(data_model$yr, 
+                        levels = c(0, 1),
                         labels = c("2011", "2012"))
 data_model$mnth <- factor(data_model$mnth)
 data_model$weekday <- factor(data_model$weekday)
 data_model$weathersit <- factor(data_model$weathersit,
+                                levels = c(1, 2, 3, 4),
                                 labels = c("Clear", "Mist", "LightRain", "HeavyRain"))
 data_model$holiday <- factor(data_model$holiday)
 data_model$workingday <- factor(data_model$workingday)
