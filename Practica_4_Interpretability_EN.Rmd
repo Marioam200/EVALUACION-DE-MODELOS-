@@ -1,0 +1,474 @@
+---
+title: "Task 3: Interpretability - Linear Models"
+subtitle: "Reliable Models - EDM-GCD"
+author: "Mario Álvarez Martínez, Marcos Carrasco Panadero, Sergio Samaniego Hernández"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    theme: cosmo
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+# Load necessary libraries
+library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+library(corrplot)
+library(car)
+library(lmtest)
+```
+
+# Introduction
+
+## Context and Motivation
+
+In this task, we will address the topic of **Interpretability** of machine learning models. 
+Interpretability is fundamental in many fields such as medicine, finance, public administration, etc., 
+where not only does the model's predictive accuracy matter, but also its ability to 
+explain **why** it makes certain decisions.
+
+**Key question**: How can we understand which features influence our model's predictions?
+
+### Objectives of this practice
+
+- Understand the principles of **interpretability** in linear regression models
+- Learn to **interpret model coefficients**
+- Evaluate the **validity of interpretations** through diagnostics
+- Visualize and communicate results clearly
+- Understand the **limitations** of linear models
+
+## The Problem: Predicting Bicycle Rentals
+
+We will use the **Bike-Sharing** dataset from the Capital Bikeshare system in Washington D.C. (2011-2012).
+
+### Research question
+
+*What are the factors that influence the number of bicycles rented daily and what is the impact 
+of each of these factors?*
+
+### Dataset variables
+
+The dataset contains aggregated **daily** information about bicycle rentals:
+
+**Dependent variable (target):**
+- `cnt`: Total number of bicycles rented (casual + registered)
+
+**Independent variables (features):**
+- `season`: Season (1: spring, 2: summer, 3: fall, 4: winter)
+- `yr`: Year (0: 2011, 1: 2012)
+- `mnth`: Month (1-12)
+- `holiday`: Is holiday (0/1)
+- `weekday`: Day of week (0-6)
+- `workingday`: Is working day (0/1)
+- `weathersit`: Weather condition (1: clear, 2: cloudy, 3: light rain, 4: heavy rain)
+- `temp`: Normalized temperature (0-1)
+- `atemp`: Normalized apparent temperature (0-1)
+- `hum`: Normalized humidity (0-1)
+- `windspeed`: Normalized wind speed (0-1)
+
+## Initial hypotheses
+
+Based on theory and common sense, we expect:
+
+1. **Positive effect of temperature**: Warmer days → more rentals
+2. **Negative effect of bad weather**: Rain/snow → fewer rentals
+3. **Effect of day of week**: Differences between weekdays and weekends
+4. **Effect of season**: Variations according to time of year
+5. **Effect of year**: Possible growth from 2011 to 2012
+
+---
+
+# The Linear Model
+
+## Loading and exploring the dataset
+
+```{r load_data}
+# Load the dataset
+data <- read.csv("day.csv")
+
+# Initial exploration
+head(data, 10)
+dim(data)
+str(data)
+```
+
+```{r descriptive_exploration}
+# Descriptive statistics of main variables
+summary(data)
+
+# Focus on the target variable
+cat("Statistics of cnt (daily rentals):\n")
+cat("Mean:", mean(data$cnt), "\n")
+cat("Standard deviation:", sd(data$cnt), "\n")
+cat("Minimum:", min(data$cnt), "\n")
+cat("Maximum:", max(data$cnt), "\n")
+```
+
+## Data preparation
+
+```{r data_preparation}
+# IMPORTANT: Convert categorical variables to factors for better interpretation
+
+# Create copies to work with
+data_model <- data
+
+# Convert categorical variables to factors
+data_model$season <- factor(data_model$season, 
+                            labels = c("Spring", "Summer", "Fall", "Winter"))
+data_model$yr <- factor(data_model$yr, 
+                        labels = c("2011", "2012"))
+data_model$mnth <- factor(data_model$mnth)
+data_model$weekday <- factor(data_model$weekday)
+data_model$weathersit <- factor(data_model$weathersit,
+                                labels = c("Clear", "Mist", "LightRain", "HeavyRain"))
+data_model$holiday <- factor(data_model$holiday)
+data_model$workingday <- factor(data_model$workingday)
+
+# Visualize the distribution of the target variable
+p1 <- ggplot(data_model, aes(x = cnt)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of daily rentals (cnt)",
+       x = "Number of bicycles rented",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+p2 <- ggplot(data_model, aes(sample = cnt)) +
+  stat_qq(color = "steelblue") +
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot: Normality of cnt",
+       x = "Theoretical Quantiles",
+       y = "Sample Quantiles") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+grid.arrange(p1, p2, ncol = 2)
+
+# MEMORY NOTE:
+# We observe that the distribution of cnt is approximately normal, 
+# which justifies the use of linear regression.
+```
+
+## Correlation analysis
+
+```{r correlation}
+# Select only numeric variables for correlation matrix
+numeric_cols <- c("temp", "atemp", "hum", "windspeed", "cnt")
+cor_matrix <- cor(data[, numeric_cols])
+
+# Visualize correlation matrix
+corrplot(cor_matrix, method = "circle", type = "upper", 
+         diag = FALSE, addCoef.col = "black", tl.cex = 0.8,
+         title = "Correlation matrix - Numeric variables")
+
+# MEMORY NOTE:
+# - Temperature (temp) and apparent temperature (atemp) are highly correlated
+# - There is multicollinearity between temp and atemp (r > 0.98)
+# - cnt is positively correlated with temperature
+# - cnt is negatively correlated with humidity and wind speed
+```
+
+## Fitting the Multiple Linear Model
+
+```{r full_model}
+# MEMORY NOTE:
+# We fit a linear model that includes:
+# - Numeric variables: temperature, humidity, wind speed
+# - Categorical variables: season, year, weather condition
+# - We exclude 'instant', 'dteday', 'casual' and 'registered' (irrelevant/redundant variables)
+# - We exclude 'atemp' due to multicollinearity with 'temp'
+
+model <- lm(cnt ~ temp + hum + windspeed + season + yr + weathersit + 
+              holiday + workingday, 
+            data = data_model)
+
+# Model summary
+summary(model)
+
+# Extract key information
+cat("\n=== INITIAL INTERPRETATION ===\n")
+cat("R-squared:", round(summary(model)$r.squared, 4), "\n")
+cat("Adjusted R-squared:", round(summary(model)$adj.r.squared, 4), "\n")
+cat("F-statistic:", round(summary(model)$fstatistic[1], 4), "\n")
+
+# MEMORY NOTE:
+# - R-squared indicates what percentage of variance we explain
+# - Adjusted R-squared penalizes for number of variables
+# - F-statistic tests if the model is globally significant (p-value < 0.05)
+```
+
+## Interpretation of coefficients
+
+```{r coefficient_interpretation}
+# Extract coefficients
+coef_table <- as.data.frame(round(coef(summary(model)), 4))
+coef_table$Variable <- rownames(coef_table)
+rownames(coef_table) <- NULL
+coef_table <- coef_table[, c(5, 1, 2, 3, 4)]
+colnames(coef_table) <- c("Variable", "Coefficient", "Std.Error", "t-value", "p-value")
+
+print(coef_table)
+
+cat("\n=== INTERPRETATION OF COEFFICIENTS ===\n\n")
+
+cat("Intercept (β₀):\n")
+cat("  Value: ", round(coef(model)[1], 2), "\n")
+cat("  Meaning: Expected number of rentals when all continuous variables are 0\n")
+cat("  (Has no practical interpretation in this case)\n\n")
+
+cat("Temperature (temp):\n")
+cat("  Coefficient: ", round(coef(model)["temp"], 2), "\n")
+cat("  Interpretation: For each increase of 1 unit in normalized temperature,\n")
+cat("                  the number of rentals increases by approx.", round(coef(model)["temp"], 0), "bicycles\n")
+cat("  Significance: ", if(summary(model)$coefficients["temp", "Pr(>|t|)"] < 0.05) 
+                            "YES (p < 0.05)" else "NO", "\n\n")
+
+cat("Humidity (hum):\n")
+cat("  Coefficient: ", round(coef(model)["hum"], 2), "\n")
+cat("  Interpretation: For each increase of 1 unit in humidity,\n")
+cat("                  the number of rentals decreases by approx.", abs(round(coef(model)["hum"], 0)), "bicycles\n")
+cat("  Significance: ", if(summary(model)$coefficients["hum", "Pr(>|t|)"] < 0.05) 
+                            "YES (p < 0.05)" else "NO", "\n\n")
+
+cat("Wind speed (windspeed):\n")
+cat("  Coefficient: ", round(coef(model)["windspeed"], 2), "\n")
+cat("  Interpretation: For each increase of 1 unit in wind speed,\n")
+cat("                  the number of rentals decreases by approx.", abs(round(coef(model)["windspeed"], 0)), "bicycles\n")
+cat("  Significance: ", if(summary(model)$coefficients["windspeed", "Pr(>|t|)"] < 0.05) 
+                            "YES (p < 0.05)" else "NO", "\n\n")
+
+cat("Season (categorical variables):\n")
+for(season in c("seasonSummer", "seasonFall", "seasonWinter")) {
+  if(!is.na(coef(model)[season])) {
+    cat("  ", season, ": ", round(coef(model)[season], 0), "bicycles vs. Spring\n", sep="")
+  }
+}
+cat("\n")
+
+cat("Year (yr2012):\n")
+cat("  Coefficient: ", round(coef(model)["yr2012"], 0), "\n")
+cat("  Interpretation: In 2012 there are approx.", round(coef(model)["yr2012"], 0), 
+    "more rentals than in 2011\n\n")
+
+cat("Weather condition (weathersit):\n")
+for(weather in c("weathersitMist", "weathersitLightRain", "weathersitHeavyRain")) {
+  if(!is.na(coef(model)[weather])) {
+    cat("  ", weather, ": ", round(coef(model)[weather], 0), 
+        "bicycles vs. Clear weather\n", sep="")
+  }
+}
+```
+
+## Model diagnostics
+
+```{r residuals_diagnostics}
+# IMPORTANT: Before interpreting the coefficients, we must verify that
+# the assumptions of linear regression are met
+
+par(mfrow = c(2, 2))
+plot(model)
+par(mfrow = c(1, 1))
+
+# MEMORY NOTE:
+# We verify:
+# 1. Residuals vs Fitted: Are the errors random? (horizontal line)
+# 2. Normal Q-Q: Are the residuals normal? (points on the line)
+# 3. Scale-Location: Is there homoscedasticity? (constant variance)
+# 4. Residuals vs Leverage: Are there influential outliers?
+```
+
+```{r normality_test}
+# Shapiro-Wilk test for normality of residuals
+shapiro_test <- shapiro.test(residuals(model))
+cat("Shapiro-Wilk test for normality of residuals:\n")
+cat("p-value:", round(shapiro_test$p.value, 4), "\n")
+if(shapiro_test$p.value > 0.05) {
+  cat("CONCLUSION: Residuals are approximately normal (p > 0.05)\n")
+} else {
+  cat("CONCLUSION: Residuals are NOT normal (p < 0.05)\n")
+}
+```
+
+```{r homoscedasticity_test}
+# Breusch-Pagan test for homoscedasticity
+bp_test <- bptest(model)
+cat("\nBreusch-Pagan test for homoscedasticity:\n")
+cat("p-value:", round(bp_test$p.value, 4), "\n")
+if(bp_test$p.value > 0.05) {
+  cat("CONCLUSION: There is homoscedasticity (p > 0.05)\n")
+} else {
+  cat("CONCLUSION: There is NO homoscedasticity (p < 0.05)\n")
+}
+```
+
+```{r multicollinearity_test}
+# VIF (Variance Inflation Factor) to detect multicollinearity
+vif_values <- car::vif(model)
+cat("\nVIF (Variance Inflation Factor) - Multicollinearity:\n")
+print(round(vif_values, 3))
+cat("\nRule: VIF > 5-10 indicates multicollinearity problems\n")
+```
+
+## Visualization of effects
+
+```{r coefficients_plot}
+# Extract significant coefficients to visualize
+coef_df <- data.frame(
+  variable = names(coef(model))[-1],  # Exclude intercept
+  coefficient = coef(model)[-1],
+  se = summary(model)$coefficients[-1, 2]
+)
+
+# Filter only significant coefficients
+coef_df$pvalue <- summary(model)$coefficients[-1, 4]
+coef_df_sig <- coef_df[coef_df$pvalue < 0.05, ]
+coef_df_sig <- coef_df_sig[order(coef_df_sig$coefficient), ]
+
+# Plot
+ggplot(coef_df_sig, aes(x = reorder(variable, coefficient), y = coefficient)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_errorbar(aes(ymin = coefficient - 1.96*se, 
+                    ymax = coefficient + 1.96*se), 
+                width = 0.2, color = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  coord_flip() +
+  labs(title = "Linear Model Coefficients (only significant, p < 0.05)",
+       x = "Variables",
+       y = "Coefficient (95% CI)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+# MEMORY NOTE:
+# This graph shows:
+# - Magnitude of the effect of each variable (Y axis)
+# - Associated uncertainty (error bars = 95% CI)
+# - Only statistically significant variables
+```
+
+```{r categorical_variable_effects}
+# Effects of categorical variables
+# Temperature
+temp_effect <- data.frame(
+  temp = seq(0, 1, 0.1),
+  predicted = predict(model, 
+                      newdata = data.frame(
+                        temp = seq(0, 1, 0.1),
+                        hum = mean(data_model$hum),
+                        windspeed = mean(data_model$windspeed),
+                        season = "Spring",
+                        yr = "2011",
+                        weathersit = "Clear",
+                        holiday = "0",
+                        workingday = "1"
+                      ))
+)
+
+p1 <- ggplot(temp_effect, aes(x = temp, y = predicted)) +
+  geom_line(color = "steelblue", size = 1) +
+  geom_point(size = 3, color = "steelblue") +
+  labs(title = "Effect of Temperature on Rentals",
+       x = "Normalized temperature",
+       y = "Predicted rentals") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11, face = "bold"))
+
+# By season
+season_effect <- data.frame(
+  season = factor(c("Spring", "Summer", "Fall", "Winter"),
+                  levels = levels(data_model$season)),
+  predicted = predict(model,
+                      newdata = data.frame(
+                        season = factor(c("Spring", "Summer", "Fall", "Winter"),
+                                      levels = levels(data_model$season)),
+                        temp = mean(data_model$temp),
+                        hum = mean(data_model$hum),
+                        windspeed = mean(data_model$windspeed),
+                        yr = "2011",
+                        weathersit = "Clear",
+                        holiday = "0",
+                        workingday = "1"
+                      ))
+)
+
+p2 <- ggplot(season_effect, aes(x = season, y = predicted, fill = season)) +
+  geom_bar(stat = "identity", color = "black") +
+  scale_fill_manual(values = c("Spring" = "#90EE90", 
+                               "Summer" = "#FFD700",
+                               "Fall" = "#FF6347",
+                               "Winter" = "#87CEEB")) +
+  labs(title = "Effect of Season on Rentals",
+       x = "Season",
+       y = "Predicted rentals") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11, face = "bold"),
+        legend.position = "none")
+
+grid.arrange(p1, p2, ncol = 2)
+
+# MEMORY NOTE:
+# These graphs show:
+# - How model predictions vary with independent variables
+# - The effect is linear (straight line) for continuous variables
+# - Marked differences between categories for categorical variables
+```
+
+## Model summary
+
+```{r model_summary}
+cat("=== EXECUTIVE MODEL SUMMARY ===\n\n")
+
+cat("Goodness of fit:\n")
+cat("- R-squared:", round(summary(model)$r.squared * 100, 1), 
+    "% of variance explained\n")
+cat("- Adjusted R-squared:", round(summary(model)$adj.r.squared * 100, 1), "%\n")
+cat("- RMSE:", round(sqrt(sum(residuals(model)^2) / df.residual(model)), 2), 
+    "bicycles\n\n")
+
+cat("Validated assumptions:\n")
+cat("- Normality of residuals:", 
+    if(shapiro_test$p.value > 0.05) "✓ YES" else "✗ NO", "\n")
+cat("- Homoscedasticity:", 
+    if(bp_test$p.value > 0.05) "✓ YES" else "✗ NO", "\n")
+cat("- Multicollinearity:", 
+    if(max(vif_values) < 5) "✓ Acceptable" else "✗ Problems", "\n\n")
+
+cat("Most important variables (coefficient > 500 in absolute value):\n")
+important_coefs <- coef(model)[-1]
+important_coefs <- important_coefs[abs(important_coefs) > 500]
+for(var in names(important_coefs)) {
+  cat("  -", var, ":", round(important_coefs[var], 0), "\n")
+}
+
+# MEMORY NOTE:
+# The model is relatively good but could be improved:
+# - Considering non-linear relationships
+# - Adding interaction terms
+# - Using regularization techniques (Ridge, Lasso)
+```
+
+---
+
+## Notes for the next section
+
+**For whoever continues with the next section:**
+
+1. Data is prepared and model fitted
+2. The model is reasonably interpretable (R² ≈ 0.73)
+3. There are some categorical variables that could be explored further
+4. Interaction terms can be considered (e.g: temperature × season)
+5. The following sections should include:
+   - Model validation on test data
+   - Analysis of relative importance of variables
+   - Comparison with alternative models
+   - Application to new predictions
+
+**Code to load this model in the next section:**
+```r
+# load("linear_model_bike.RData")  # If the model is saved
+# The model is called: model
+```
