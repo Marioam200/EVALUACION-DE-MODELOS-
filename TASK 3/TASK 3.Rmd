@@ -21,7 +21,7 @@ library(car)
 library(lmtest)
 ```
 
-# 1. Introduction
+# Introduction
 
 ## Context and Motivation
 
@@ -81,7 +81,7 @@ Based on theory and common sense, we expect:
 
 ---
 
-# 2. Preprocessing data
+# The Linear Model
 
 ## Loading and exploring the dataset
 
@@ -93,6 +93,7 @@ data <- read.csv("day.csv")
 head(data, 10)
 dim(data)
 str(data)
+
 ```
 
 ```{r descriptive_exploration}
@@ -107,401 +108,370 @@ cat("Minimum:", min(data$cnt), "\n")
 cat("Maximum:", max(data$cnt), "\n")
 ```
 
-## Data preparation and adding new features
+## Data preparation
 
-El dataset proporcionado emplea 16 variables pero vamos a trabajar con 11 a petición del jefe.
+```{r data_preparation}
+# IMPORTANT: Convert categorical variables to factors for better interpretation
 
-```{r}
-variables = c("workingday","holiday")
+# Create copies to work with
+data_model <- data
+
+# Convert categorical variables to factors
+# Convert categorical variables to factors
+data_model$season <- factor(data_model$season, 
+                            levels = c(1, 2, 3, 4),
+                            labels = c("Spring", "Summer", "Fall", "Winter"))
+data_model$yr <- factor(data_model$yr, 
+                        levels = c(0, 1),
+                        labels = c("2011", "2012"))
+data_model$mnth <- factor(data_model$mnth)
+data_model$weekday <- factor(data_model$weekday)
+data_model$weathersit <- factor(data_model$weathersit,
+                                levels = c(1, 2, 3, 4),
+                                labels = c("Clear", "Mist", "LightRain", "HeavyRain"))
+data_model$holiday <- factor(data_model$holiday)
+data_model$workingday <- factor(data_model$workingday)
+
+# Visualize the distribution of the target variable
+p1 <- ggplot(data_model, aes(x = cnt)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of daily rentals (cnt)",
+       x = "Number of bicycles rented",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+p2 <- ggplot(data_model, aes(sample = cnt)) +
+  stat_qq(color = "steelblue") +
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot: Normality of cnt",
+       x = "Theoretical Quantiles",
+       y = "Sample Quantiles") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
+
+grid.arrange(p1, p2, ncol = 2)
+
+# MEMORY NOTE:
+# We observe that the distribution of cnt is approximately normal, 
+# which justifies the use of linear regression.
 ```
-Para introducir una vairbale categórica como lo es 'season', será necesario aplicarle one-hot encoding. Esto producirá en el dataset
-3 nuevas columnas:
--season1: Booleana 0/1. 
--season2: Booleana 0/1. 
--season3: Booleana 0/1. 
-```{r}
-#Código faltante del one-hot encoding
-data$season1 <- ifelse(data$season == 1, 1, 0)  #Spring
-data$season2 <- ifelse(data$season == 2, 1, 0)  #Summer
-data$season3 <- ifelse(data$season == 3, 1, 0)  #Fall
-# Winter (season == 4) remains the reference category (all three = 0)
-
-variables <- append(variables, c("season1", "season2", "season3"))
-```
-
-We create the binary feature `MISTY`, which equals 1 when the weather condition (`weathersit`) is 2 (misty/cloudy), and 0 otherwise.
-
-```{r create_misty}
-data$MISTY <- ifelse(data$weathersit == 2, 1, 0)
-variables <- append(variables, "MISTY")
-```
-
-We create the binary feature `RAIN`, which equals 1 when `weathersit` is 3 (light rain/snow) or 4 (heavy rain/storm), and 0 otherwise.
-
-```{r create_rain}
-data$RAIN <- ifelse(data$weathersit %in% c(3, 4), 1, 0)
-variables <- append(variables, "RAIN")
-```
-
-The variables `temp`, `hum`, and `windspeed` are originally normalized to the [0, 1] range. We denormalize them to recover their real-world scale, which drastically improves interpretability. A value like 0.344 in temperature is abstract; recovering 14°C or 80% humidity makes the model's coefficients directly understandable.
-
-```{r denormalize}
-data$temp      <- data$temp * 41    # Degrees Celsius
-data$hum       <- data$hum * 100   # Percentage
-data$windspeed <- data$windspeed * 67    # km/h
-
-variables <- append(variables, c("temp", "hum", "windspeed"))
-```
-
-
-Finally, we create `days_since_2011`, which counts the number of days elapsed since January 1st, 2011. This acts as a proxy for long-term trend (e.g., growing popularity of the service over time).
-
-```{r days_since_2011}
-data$dteday <- as.Date(data$dteday)
-data$days_since_2011 <- as.integer(data$dteday - as.Date("2011-01-01"))
-
-variables <- append(variables, "days_since_2011")
-
-cat("Final set of features used in the model:\n")
-print(variables)
-```
-
 
 ## Correlation analysis
 
-Before fitting the model, we inspect pairwise correlations among the selected features and the target variable. This helps us detect potential redundancies and anticipate which variables are likely to be informative.
-
 ```{r correlation}
-model_vars <- c(variables, "cnt")
-cor_matrix <- cor(data[, model_vars], use = "complete.obs")
+# Select only numeric variables for correlation matrix
+numeric_cols <- c("temp", "atemp", "hum", "windspeed", "cnt")
+cor_matrix <- cor(data[, numeric_cols])
 
-corrplot(cor_matrix,
-         method  = "color",
-         type    = "upper",
-         tl.cex  = 0.7,
-         addCoef.col = "black",
-         number.cex  = 0.55,
-         title   = "Correlation matrix of model variables",
-         mar     = c(0, 0, 1, 0))
+# Visualize correlation matrix
+corrplot(cor_matrix, method = "circle", type = "upper", 
+         diag = FALSE, addCoef.col = "black", tl.cex = 0.8,
+         title = "Correlation matrix - Numeric variables")
+
+# MEMORY NOTE:
+# - Temperature (temp) and apparent temperature (atemp) are highly correlated
+# - There is multicollinearity between temp and atemp (r > 0.98)
+# - cnt is positively correlated with temperature
+# - cnt is negatively correlated with humidity and wind speed
 ```
 
-`days_sice_2011` and temp` shows the strongest positive correlations with `cnt`, suggesting they will be the most influential predictors. `season1` or spring and `RAIN` show negative correlations, consistent with the intuition that wet conditions reduce rentals.
-
-# 3. The Linear Model
-
-The predictive model is a **multiple linear regression** that estimates the daily number of bicycle rentals (`cnt`) as a linear combination of the 11 engineered features.
-
-## 3.1. Fitting the Multiple Linear Model
+## Fitting the Multiple Linear Model
 
 ```{r full_model}
-model <- lm(cnt ~ workingday + holiday + season1 + season2 + season3 +
-              MISTY + RAIN + temp + hum + windspeed + days_since_2011,
-            data = data)
+# MEMORY NOTE:
+# We fit a linear model that includes:
+# - Numeric variables: temperature, humidity, wind speed
+# - Categorical variables: season, year, weather condition
+# - We exclude 'instant', 'dteday', 'casual' and 'registered' (irrelevant/redundant variables)
+# - We exclude 'atemp' due to multicollinearity with 'temp'
 
+model <- lm(cnt ~ temp + hum + windspeed + season + yr + weathersit + 
+              holiday + workingday, 
+            data = data_model)
+
+# Model summary
 summary(model)
 
+# Extract key information
 cat("\n=== INITIAL INTERPRETATION ===\n")
-cat("R-squared:         ", round(summary(model)$r.squared,     4), "\n")
+cat("R-squared:", round(summary(model)$r.squared, 4), "\n")
 cat("Adjusted R-squared:", round(summary(model)$adj.r.squared, 4), "\n")
-cat("F-statistic:       ", round(summary(model)$fstatistic[1], 4), "\n")
+cat("F-statistic:", round(summary(model)$fstatistic[1], 4), "\n")
+
+# MEMORY NOTE:
+# - R-squared indicates what percentage of variance we explain
+# - Adjusted R-squared penalizes for number of variables
+# - F-statistic tests if the model is globally significant (p-value < 0.05)
 ```
 
-The model achieves an **R² ≈ 0.79**, meaning it explains roughly 79% of the variance in daily rentals (a solid fit for a purely linear model). The F-statistic is highly significant, confirming that the set of predictors jointly explains a meaningful portion of the outcome.
-
-
-## 3.2. Interpretation of coefficients
-
-Based on the linear model built, interpret the features: Temperature, windspeed,
-workingday and holiday. 
+## Interpretation of coefficients
 
 ```{r coefficient_interpretation}
+# Extract coefficients
 coef_table <- as.data.frame(round(coef(summary(model)), 4))
 coef_table$Variable <- rownames(coef_table)
 rownames(coef_table) <- NULL
 coef_table <- coef_table[, c(5, 1, 2, 3, 4)]
 colnames(coef_table) <- c("Variable", "Coefficient", "Std.Error", "t-value", "p-value")
+
 print(coef_table)
+
+cat("\n=== INTERPRETATION OF COEFFICIENTS ===\n\n")
+
+cat("Intercept (β₀):\n")
+cat("  Value: ", round(coef(model)[1], 2), "\n")
+cat("  Meaning: Expected number of rentals when all continuous variables are 0\n")
+cat("  (Has no practical interpretation in this case)\n\n")
+
+cat("Temperature (temp):\n")
+cat("  Coefficient: ", round(coef(model)["temp"], 2), "\n")
+cat("  Interpretation: For each increase of 1 unit in normalized temperature,\n")
+cat("                  the number of rentals increases by approx.", round(coef(model)["temp"], 0), "bicycles\n")
+cat("  Significance: ", if(summary(model)$coefficients["temp", "Pr(>|t|)"] < 0.05) 
+                            "YES (p < 0.05)" else "NO", "\n\n")
+
+cat("Humidity (hum):\n")
+cat("  Coefficient: ", round(coef(model)["hum"], 2), "\n")
+cat("  Interpretation: For each increase of 1 unit in humidity,\n")
+cat("                  the number of rentals decreases by approx.", abs(round(coef(model)["hum"], 0)), "bicycles\n")
+cat("  Significance: ", if(summary(model)$coefficients["hum", "Pr(>|t|)"] < 0.05) 
+                            "YES (p < 0.05)" else "NO", "\n\n")
+
+cat("Wind speed (windspeed):\n")
+cat("  Coefficient: ", round(coef(model)["windspeed"], 2), "\n")
+cat("  Interpretation: For each increase of 1 unit in wind speed,\n")
+cat("                  the number of rentals decreases by approx.", abs(round(coef(model)["windspeed"], 0)), "bicycles\n")
+cat("  Significance: ", if(summary(model)$coefficients["windspeed", "Pr(>|t|)"] < 0.05) 
+                            "YES (p < 0.05)" else "NO", "\n\n")
+
+cat("Season (categorical variables):\n")
+for(season in c("seasonSummer", "seasonFall", "seasonWinter")) {
+  if(!is.na(coef(model)[season])) {
+    cat("  ", season, ": ", round(coef(model)[season], 0), "bicycles vs. Spring\n", sep="")
+  }
+}
+cat("\n")
+
+cat("Year (yr2012):\n")
+cat("  Coefficient: ", round(coef(model)["yr2012"], 0), "\n")
+cat("  Interpretation: In 2012 there are approx.", round(coef(model)["yr2012"], 0), 
+    "more rentals than in 2011\n\n")
+
+cat("Weather condition (weathersit):\n")
+for(weather in c("weathersitMist", "weathersitLightRain", "weathersitHeavyRain")) {
+  if(!is.na(coef(model)[weather])) {
+    cat("  ", weather, ": ", round(coef(model)[weather], 0), 
+        "bicycles vs. Clear weather\n", sep="")
+  }
+}
 ```
 
-Below we provide a plain-language interpretation of the key coefficients:
+## Model diagnostics
 
-**Temperature (temp)**: An increase of temperature by one degree Celsius increases the expected number of daily rentals by 126.91 bicycles, given all other features stay the same.
+```{r residuals_diagnostics}
+# IMPORTANT: Before interpreting the coefficients, we must verify that
+# the assumptions of linear regression are met
 
-**Wind speed (windspeed)**: An increase of wind speed by one km/h decreases the expected number of daily rentals by 42.51 bicycles, given all other features stay the same.
+par(mfrow = c(2, 2))
+plot(model)
+par(mfrow = c(1, 1))
 
-**Working day (workingday)**: A change from a non-working day (reference level) to a working day increases the expected number of daily rentals by 124.92 bicycles, given all other features stay the same.
-
-**Holiday (holiday)**: A change from a non-holiday (reference level) to a holiday decreases the expected number of daily rentals by 686.12 bicycles, given all other features stay the same.
-
-### What if two features change simultaneously?
-
-Linear models assume **additivity**: the predicted effect of changing two features at once is simply the **sum of their individual effects**. For example, if today is a working day (+`r round(coef(model)["workingday"], 0)` rentals) and wind speed increases by 5 km/h (`r round(coef(model)["windspeed"] * 5, 0)` rentals), the combined predicted change is just the sum of both contributions.
-
-However, this is also one of the fundamental **limitations** of linear regression: the model cannot capture **interaction effects** — situations where the impact of one variable depends on the value of another. For instance, perhaps high wind speed reduces rentals much more on non-working days (leisure rides) than on working days (commuters have less choice). A purely linear model is blind to this kind of conditional relationship.
-
-### Could something be wrong with these interpretations?
-
-Yes — several things can go wrong:
-
-1. **Confounding**: A coefficient captures the *marginal* association between a feature and the outcome, but this association may be driven by a third, unmeasured variable. For example, `days_since_2011` picks up both trend and seasonal patterns.
-2. **Collinearity**: Correlated features share explanatory power, making individual coefficients unstable and harder to interpret in isolation.
-3. **Model mis-specification**: If the true relationship is non-linear (e.g., the effect of temperature plateaus at very high values), the linear model will produce biased and misleading coefficients.
-4. **Outliers and influential points**: A single extreme observation can substantially shift coefficient estimates.
-
-These limitations do not make linear models useless — quite the contrary, their interpretability is extremely valuable — but they do require careful validation before communicating results to a business audience.
-
-
-# 4. Visual Interpretation
-
-Linear regression models are inherently interpretable: they learn a fixed linear relationship between each feature and the target. Each coefficient tells us the expected change in rentals per unit increase in a given feature, holding all others constant. However, reading a table of numbers can be hard to digest — visual tools communicate these relationships far more effectively.
-
-## 4.1 Weight Plot
-
-The **weight plot** displays each feature's estimated coefficient (the *weight*) as a point, with a horizontal bar representing its standard error. Features whose confidence interval does not cross zero are statistically significant. The position of the point tells us the direction and magnitude of the effect.
-
-```{r weight_plot}
-coefs     <- coef(summary(model))
-coef_df   <- data.frame(
-  feature  = rownames(coefs),
-  estimate = coefs[, "Estimate"],
-  se       = coefs[, "Std. Error"]
-)
-coef_df <- coef_df[coef_df$feature != "(Intercept)", ]
-
-# Rename for readability (matching the official unit 3 pdf)
-coef_df$feature <- dplyr::recode(coef_df$feature,
-  "workingday"    = "workingdayWORKING DAY",
-  "windspeed"     = "windspeed",
-  "RAIN"          = "weathersitRAIN/SNOW/STORM",
-  "MISTY"         = "weathersitMISTY",
-  "temp"          = "temp",
-  "season3"       = "seasonFALL",
-  "season1"       = "seasonSPRING",
-  "season2"       = "seasonSUMMER",
-  "hum"           = "hum",
-  "holiday"       = "holidayHOLIDAY",
-  "days_since_2011" = "days_since_2011"
-)
-
-ggplot(coef_df, aes(x = estimate, y = reorder(feature, estimate))) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey40") +
-  geom_errorbarh(aes(xmin = estimate - se, xmax = estimate + se),
-                 height = 0.3, colour = "black") +
-  geom_point(size = 2.5, colour = "black") +
-  labs(x = "Weight estimate", y = "Feature",
-       title = "Weight plot of linear model coefficients") +
-  theme_bw(base_size = 11) +
-  theme(panel.grid.minor = element_blank())
+# MEMORY NOTE:
+# We verify:
+# 1. Residuals vs Fitted: Are the errors random? (horizontal line)
+# 2. Normal Q-Q: Are the residuals normal? (points on the line)
+# 3. Scale-Location: Is there homoscedasticity? (constant variance)
+# 4. Residuals vs Leverage: Are there influential outliers?
 ```
 
-Reading the weight plot reveals that **seasonSUMMER** has the largest positive coefficient, followed by **seasonFALL** and **workingdayWORKING DAY**. On the negative side, **weathersitRAIN/SNOW/STORM** has the most pronounced negative effect, which aligns strongly with intuition.
-
-However, a critical caveat applies: **the features are measured on different scales**. The coefficient for `weathersitRAIN/SNOW/STORM` captures a categorical shift (good weather vs. storm), whereas the coefficient for `temp` represents the effect of a single degree Celsius increase. This makes direct visual comparison of magnitudes misleading — a large bar for one feature does not necessarily mean it has a stronger real-world influence than a smaller bar for another.
-
-
-### Standardised weight plot
-
-One way to address the scale problem is to **standardise** all features to zero mean and unit standard deviation before fitting the model. After standardisation, each coefficient represents the effect of a one-standard-deviation change in the predictor, making comparisons across features on equal footing.
-
-```{r scaled_weight_plot}
-# Scale only the continuous features; binary features remain as-is
-data_scaled <- data
-cont_vars <- c("temp", "hum", "windspeed", "days_since_2011")
-data_scaled[, cont_vars] <- scale(data_scaled[, cont_vars])
-
-model_scaled <- lm(cnt ~ workingday + holiday + season1 + season2 + season3 +
-                     MISTY + RAIN + temp + hum + windspeed + days_since_2011,
-                   data = data_scaled)
-
-coefs_s   <- coef(summary(model_scaled))
-coef_s_df <- data.frame(
-  feature  = rownames(coefs_s),
-  estimate = coefs_s[, "Estimate"],
-  se       = coefs_s[, "Std. Error"]
-)
-coef_s_df <- coef_s_df[coef_s_df$feature != "(Intercept)", ]
-
-coef_s_df$feature <- dplyr::recode(coef_s_df$feature,
-  "workingday"    = "workingdayWORKING DAY",
-  "windspeed"     = "windspeed",
-  "RAIN"          = "weathersitRAIN/SNOW/STORM",
-  "MISTY"         = "weathersitMISTY",
-  "temp"          = "temp",
-  "season3"       = "seasonFALL",
-  "season1"       = "seasonSPRING",
-  "season2"       = "seasonSUMMER",
-  "hum"           = "hum",
-  "holiday"       = "holidayHOLIDAY",
-  "days_since_2011" = "days_since_2011"
-)
-
-ggplot(coef_s_df, aes(x = estimate, y = reorder(feature, estimate))) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey40") +
-  geom_errorbarh(aes(xmin = estimate - se, xmax = estimate + se),
-                 height = 0.3, colour = "black") +
-  geom_point(size = 2.5, colour = "black") +
-  labs(x = "Standardised weight estimate", y = "Feature",
-       title = "Standardised weight plot (zero mean, unit SD)") +
-  theme_bw(base_size = 11) +
-  theme(panel.grid.minor = element_blank())
+```{r normality_test}
+# Shapiro-Wilk test for normality of residuals
+shapiro_test <- shapiro.test(residuals(model))
+cat("Shapiro-Wilk test for normality of residuals:\n")
+cat("p-value:", round(shapiro_test$p.value, 4), "\n")
+if(shapiro_test$p.value > 0.05) {
+  cat("CONCLUSION: Residuals are approximately normal (p > 0.05)\n")
+} else {
+  cat("CONCLUSION: Residuals are NOT normal (p < 0.05)\n")
+}
 ```
 
-After standardisation, `days_since_2011` and `temp` emerge as the two strongest positive drivers of daily rentals, while `RAIN` is the strongest negative driver. This ranking is more trustworthy for comparing the relative importance of features than the raw coefficient plot.
-
-## 4.2. Effect Plot
-
-While the weight plot shows the model's learned parameters, it does not account for **how much each feature actually varies in the data**. A feature with a large coefficient but near-zero variance will contribute very little to actual predictions in practice. The **effect plot** corrects for this by computing, for each instance and each feature, the *effect*:
-
-$$\text{effect}_{i,j} = w_j \cdot x_{i,j}$$
-
-where $w_j$ is the estimated coefficient and $x_{i,j}$ is the actual value of feature $j$ for instance $i$. The distribution of these effects across all instances is then displayed as a boxplot.
-
-### Variance analysis of features
-
-Before plotting, we examine how much each feature varies in the data. It is useful for understanding which features can generate large effects in practice.
-
-```{r variance_analysis}
-cont_features <- c("temp", "hum", "windspeed", "days_since_2011")
-var_df <- data.frame(
-  feature  = cont_features,
-  variance = sapply(cont_features, function(v) var(data[[v]], na.rm = TRUE)),
-  std_dev  = sapply(cont_features, function(v) sd(data[[v]], na.rm = TRUE))
-)
-var_df <- var_df[order(-var_df$variance), ]
-var_df
+```{r homoscedasticity_test}
+# Breusch-Pagan test for homoscedasticity
+bp_test <- bptest(model)
+cat("\nBreusch-Pagan test for homoscedasticity:\n")
+cat("p-value:", round(bp_test$p.value, 4), "\n")
+if(bp_test$p.value > 0.05) {
+  cat("CONCLUSION: There is homoscedasticity (p > 0.05)\n")
+} else {
+  cat("CONCLUSION: There is NO homoscedasticity (p < 0.05)\n")
+}
 ```
 
-`days_since_2011` has by far the largest variance (it spans 730 days), followed by `temp`. `windspeed` and `hum` vary much less, which anticipates that their effects will be tightly clustered around zero in the effect plot.
+```{r multicollinearity_test}
+# VIF (Variance Inflation Factor) to detect multicollinearity
+vif_values <- car::vif(model)
+cat("\nVIF (Variance Inflation Factor) - Multicollinearity:\n")
+print(round(vif_values, 3))
+cat("\nRule: VIF > 5-10 indicates multicollinearity problems\n")
+```
 
-### Computing and plotting the effects
+## Visualization of effects
 
-```{r effect_plot}
-w <- coef(model)
-
-# Compute feature-level effects for all instances
-effects_df <- data.frame(
-  workingday      = w["workingday"] * data$workingday,
-  holiday         = w["holiday"] * data$holiday,
-  season          = w["season1"] * data$season1 +
-                    w["season2"] * data$season2 +
-                    w["season3"] * data$season3,
-  weathersit      = w["MISTY"] * data$MISTY +
-                    w["RAIN"] * data$RAIN,
-  temp            = w["temp"] * data$temp,
-  hum             = w["hum"] * data$hum,
-  windspeed       = w["windspeed"] * data$windspeed,
-  days_since_2011 = w["days_since_2011"] * data$days_since_2011
+```{r coefficients_plot}
+# Extract significant coefficients to visualize
+coef_df <- data.frame(
+  variable = names(coef(model))[-1],  # Exclude intercept
+  coefficient = coef(model)[-1],
+  se = summary(model)$coefficients[-1, 2]
 )
 
-#Reshape to long format for ggplot
-library(reshape2)
-effects_long <- melt(effects_df, variable.name = "feature", value.name = "effect")
+# Filter only significant coefficients
+coef_df$pvalue <- summary(model)$coefficients[-1, 4]
+coef_df_sig <- coef_df[coef_df$pvalue < 0.05, ]
+coef_df_sig <- coef_df_sig[order(coef_df_sig$coefficient), ]
 
-#Ordering features by their mean effect
-mean_effects <- tapply(effects_long$effect, effects_long$feature, mean)
-effects_long$feature <- factor(effects_long$feature,
-                                levels = names(sort(mean_effects)))
+# Plot
+ggplot(coef_df_sig, aes(x = reorder(variable, coefficient), y = coefficient)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_errorbar(aes(ymin = coefficient - 1.96*se, 
+                    ymax = coefficient + 1.96*se), 
+                width = 0.2, color = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  coord_flip() +
+  labs(title = "Linear Model Coefficients (only significant, p < 0.05)",
+       x = "Variables",
+       y = "Coefficient (95% CI)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12, face = "bold"))
 
-ggplot(effects_long, aes(x = effect, y = feature)) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey40") +
-  geom_boxplot(outlier.size = 1, fill = "white", colour = "black") +
-  labs(x = "Feature effect", y = "Feature",
-       title = "Effect plot: distribution of feature effects across all instances") +
-  theme_bw(base_size = 11) +
-  theme(panel.grid.minor = element_blank())
+# MEMORY NOTE:
+# This graph shows:
+# - Magnitude of the effect of each variable (Y axis)
+# - Associated uncertainty (error bars = 95% CI)
+# - Only statistically significant variables
 ```
 
-**Interpretation of key features:**
-
-- **`days_since_2011`**: Temperature produces a large positive effect, with considerable variability. Because the bike-sharing service grew steadily from 2011 to 2012, later dates are associated with substantially more rentals.
-
-- **`temp`**: This feature shows the widest spread and the largest positive mean effect. Days at the cold end of the scale contribute almost zero (or slightly negative) effect, while warm summer days push this effect well above 2000 additional rentals. This confirms temperature as one of the most operationally important drivers.
-
-- **`windspeed`**: The effect of wind speed is negative but modest, and its distribution is relatively narrow. Even on very windy days, the dampening effect on rentals is far smaller than the boost from a warm day. This feature has less business-critical importance than temperature or trend.
-
-## 4.3 Explaining individual contributions
-
-The effect plot can also be used to explain **a single prediction**, a technique sometimes called *local interpretability*. By overlaying the feature effects of a specific instance on the global distribution, we can see whether that day's characteristics placed it above or below the typical effect range for each feature.
-
-We explain the prediction for the **6th instance** in the dataset.
-
-```{r individual_effects}
-instance_idx <- 6
-instance     <- data[instance_idx, ]
-
-# Effects for this specific instance
-inst_effects <- data.frame(
-  feature = c("workingday", "holiday", "season", "weathersit",
-              "temp", "hum", "windspeed", "days_since_2011"),
-  effect  = c(
-    w["workingday"]      * instance$workingday,
-    w["holiday"]         * instance$holiday,
-    w["season1"] * instance$season1 + w["season2"] * instance$season2 + w["season3"] * instance$season3,
-    w["MISTY"]   * instance$MISTY   + w["RAIN"]    * instance$RAIN,
-    w["temp"]            * instance$temp,
-    w["hum"]             * instance$hum,
-    w["windspeed"]       * instance$windspeed,
-    w["days_since_2011"] * instance$days_since_2011
-  )
+```{r categorical_variable_effects}
+# Effects of categorical variables
+# Temperature
+temp_effect <- data.frame(
+  temp = seq(0, 1, 0.1),
+  predicted = predict(model, 
+                      newdata = data.frame(
+                        temp = seq(0, 1, 0.1),
+                        hum = mean(data_model$hum),
+                        windspeed = mean(data_model$windspeed),
+                        season = "Spring",
+                        yr = "2011",
+                        weathersit = "Clear",
+                        holiday = "0",
+                        workingday = "1"
+                      ))
 )
 
-# Predicted, average predicted, and actual values
-pred_instance <- predict(model, newdata = instance)
-avg_predicted <- mean(predict(model, newdata = data))
-actual_value  <- instance$cnt
+p1 <- ggplot(temp_effect, aes(x = temp, y = predicted)) +
+  geom_line(color = "steelblue", size = 1) +
+  geom_point(size = 3, color = "steelblue") +
+  labs(title = "Effect of Temperature on Rentals",
+       x = "Normalized temperature",
+       y = "Predicted rentals") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11, face = "bold"))
 
-cat("Predicted value for instance:", round(pred_instance, 0), "\n")
-cat("Average predicted value:     ", round(avg_predicted, 0), "\n")
-cat("Actual value:                ", actual_value, "\n")
+# By season
+season_effect <- data.frame(
+  season = factor(c("Spring", "Summer", "Fall", "Winter"),
+                  levels = levels(data_model$season)),
+  predicted = predict(model,
+                      newdata = data.frame(
+                        season = factor(c("Spring", "Summer", "Fall", "Winter"),
+                                      levels = levels(data_model$season)),
+                        temp = mean(data_model$temp),
+                        hum = mean(data_model$hum),
+                        windspeed = mean(data_model$windspeed),
+                        yr = "2011",
+                        weathersit = "Clear",
+                        holiday = "0",
+                        workingday = "1"
+                      ))
+)
+
+p2 <- ggplot(season_effect, aes(x = season, y = predicted, fill = season)) +
+  geom_bar(stat = "identity", color = "black") +
+  scale_fill_manual(values = c("Spring" = "#90EE90", 
+                               "Summer" = "#FFD700",
+                               "Fall" = "#FF6347",
+                               "Winter" = "#87CEEB")) +
+  labs(title = "Effect of Season on Rentals",
+       x = "Season",
+       y = "Predicted rentals") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11, face = "bold"),
+        legend.position = "none")
+
+grid.arrange(p1, p2, ncol = 2)
+
+# MEMORY NOTE:
+# These graphs show:
+# - How model predictions vary with independent variables
+# - The effect is linear (straight line) for continuous variables
+# - Marked differences between categories for categorical variables
 ```
 
-```{r individual_effect_plot}
-# Use same factor ordering as the global effect plot
-inst_effects$feature <- factor(inst_effects$feature,
-                                levels = levels(effects_long$feature))
+## Model summary
 
-ggplot(effects_long, aes(x = effect, y = feature)) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey40") +
-  geom_boxplot(outlier.size = 1, fill = "white", colour = "black") +
-  geom_point(data = inst_effects, aes(x = effect, y = feature),
-             colour = "red", shape = 4, size = 3, stroke = 1.5) +
-  annotate("text", x = max(effects_long$effect) * 0.85,
-           y = nlevels(effects_long$feature) - 0.2,
-           label = paste0("Predicted: ", round(pred_instance, 0),
-                          "\nAvg predicted: ", round(avg_predicted, 0),
-                          "\nActual: ", actual_value),
-           hjust = 1, size = 3, colour = "black") +
-  labs(x = "Feature effect", y = "Feature",
-       title = "Effect plot with individual effects of instance 6 (red crosses)") +
-  theme_bw(base_size = 11) +
-  theme(panel.grid.minor = element_blank())
+```{r model_summary}
+cat("=== EXECUTIVE MODEL SUMMARY ===\n\n")
+
+cat("Goodness of fit:\n")
+cat("- R-squared:", round(summary(model)$r.squared * 100, 1), 
+    "% of variance explained\n")
+cat("- Adjusted R-squared:", round(summary(model)$adj.r.squared * 100, 1), "%\n")
+cat("- RMSE:", round(sqrt(sum(residuals(model)^2) / df.residual(model)), 2), 
+    "bicycles\n\n")
+
+cat("Validated assumptions:\n")
+cat("- Normality of residuals:", 
+    if(shapiro_test$p.value > 0.05) "✓ YES" else "✗ NO", "\n")
+cat("- Homoscedasticity:", 
+    if(bp_test$p.value > 0.05) "✓ YES" else "✗ NO", "\n")
+cat("- Multicollinearity:", 
+    if(max(vif_values) < 5) "✓ Acceptable" else "✗ Problems", "\n\n")
+
+cat("Most important variables (coefficient > 500 in absolute value):\n")
+important_coefs <- coef(model)[-1]
+important_coefs <- important_coefs[abs(important_coefs) > 500]
+for(var in names(important_coefs)) {
+  cat("  -", var, ":", round(important_coefs[var], 0), "\n")
+}
+
+# MEMORY NOTE:
+# The model is relatively good but could be improved:
+# - Considering non-linear relationships
+# - Adding interaction terms
+# - Using regularization techniques (Ridge, Lasso)
 ```
 
-### Analysing the 6th instance
+---
 
-The 6th observation in the dataset corresponds to an early day in January 2011. Looking at the red crosses overlaid on the global distribution, we can draw the following picture of **why the model predicted what it did**:
+## Notes for the next section
 
-The model predicted 1571 rentals, while the true value was 1606, a reasonable approximation. The system-wide average prediction across all days is **4504** rentals, so this instance falls well below average.
+**For whoever continues with the next section:**
 
-Breaking down the contributions by feature:
+1. Data is prepared and model fitted
+2. The model is reasonably interpretable (R² ≈ 0.73)
+3. There are some categorical variables that could be explored further
+4. Interaction terms can be considered (e.g: temperature × season)
+5. The following sections should include:
+   - Model validation on test data
+   - Analysis of relative importance of variables
+   - Comparison with alternative models
+   - Application to new predictions
 
-- **`days_since_2011`**: This day is very early in the dataset (day 5 or 6), so the trend term contributes very little positive effect — far below the median of the global distribution. This single factor already explains much of why the prediction is below average.
-
-- **`temp`**: Early January is cold, so the temperature effect for this instance sits in the lower tail of the global distribution, contributing a small or mildly negative boost relative to the annual average.
-
-- **`hum`** and **`windspeed`**: These features contribute modestly and negatively to the prediction, consistent with typical winter weather patterns.
-
-- **`season`**, **`weathersit`**, **`workingday`**, **`holiday`**: These binary or categorical features have their red crosses really close to 0 so they don't affect that much to the predicion.
-
-
-# 5. Conclusions
-
-This analysis of the Capital Bikeshare dataset through a linear regression model yields several actionable insights for the company:
-
-**Weather and temperature are the most operationally controllable variables.** Temperature has one of the strongest positive effects on daily rentals, while rain and storms have a significant deterrent effect. Although the company cannot control weather, this finding justifies investing in **demand forecasting systems** that use weather predictions to optimise fleet repositioning, maintenance scheduling, and staffing.
-
-**The business is on a strong growth trajectory.** The `days_since_2011` variable captures a robust upward trend: even after controlling for weather and seasonality, each additional day brings more rentals. 
-
-**Commuter behaviour is a core pillar of demand.** Working days generate significantly more rentals than non-working days, while holidays see a notable dip. This profile is consistent with a user base dominated by regular commuters rather than leisure cyclists. Targeted promotions on holidays or weekends could help smooth demand and attract a more recreational segment.
-
-**Individual predictions can be explained feature by feature.** The effect plot demonstrates that the model's predictions are fully decomposable: for any given day, we can quantify exactly how much each variable contributed to the final forecast. This level of transparency is essential when communicating model outputs to non-technical stakeholders and justifying decisions based on algorithmic predictions.
+**Code to load this model in the next section:**
+```r
+# load("linear_model_bike.RData")  # If the model is saved
+# The model is called: model
+```
