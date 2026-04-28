@@ -316,7 +316,7 @@ cnt ~ workingday + holiday + season1 + season2 + season3
 
 ---
 
-## 🛠 Technologies & Libraries
+## Technologies & Libraries
 
 ### Python
 - **scikit-learn** — classification, regression, metrics, feature selection
