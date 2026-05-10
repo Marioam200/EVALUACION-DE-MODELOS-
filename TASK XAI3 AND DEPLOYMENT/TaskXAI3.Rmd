@@ -1,0 +1,421 @@
+---
+title: "TaskXAI3"
+subtitle: "Interpretable models: Logistic regression, trees and RuleFit."
+author: "Mario Álvarez Martínez, Marcos Carrasco Panadero, Sergio Samaniego Hernández"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Introducción
+
+Imaginemos que nos han contratado para desplegar una serie de modelos predictivos para que los clientes pueden utilizarlos en sus negocios y entender cómo funcionan. El modo de desplegarlo será haciendo un repositorio público en Git, que estará disponible en GitHub.
+
+Para facilitar la comprensión del modelo, utilizaremos Partial Dependence Plots, los cuales estarán comentados en el Report y estarán basados en lo que esté escrito por el R de aquí.
+Volvammos a la teoría y expliquemos cómo se pueden descomponer.
+La clasificaicónd elos modelos se´gun el tipo de interpretabilidad son:
+-Interptetable models: Regresores, Decision Trees
+-Black box models: Redes neuronales, SVM..
+La clasificaicón de los modelos según el tipo de método de epxlicación son:
+-Model specifci: solo sirve para un modelo concreto (como los coeficientes de regresión, que solo sirven en regresiones lineales).
+-Model-agnostic: La epxlaicicón sirve para CUALQUIER modelo, ya sea interpretable o de caja negra. Los métodos model-agnostic solo necesitan se los Inputs y los Outputs para explicar el modelo, y encontramos técnicas como PDP, SHAP y LIME.
+
+Vamos a aplicar una expliación model-agnotic PDP para explicar en 1D las bike rentals predichas por un Random Forest hecho con los bike rentals; Un PDP para explciar en 2D el númeroo de bicicletas alquiladas según la Humidity y la temperatura; uasar PDP en 1D para explicar el precio predicho con un random forest usando las features bedrooms, bathrooms, sqft_living, sqft_lot, floors y yr_built.
+
+# 2. One-dimensional Partial Dependence Plot (Bike Rentals)
+
+## 2.1 Objective
+In this section, we analyze the marginal effect of individual features on the predicted number of bike rentals using a Random Forest model. The goal is to understand how each variable influences the model predictions independently.
+
+## 2.2 Methodology
+- Dataset: Bike rentals (day.csv)
+- Target variable: `cnt`
+- Model: Random Forest Regressor
+- Features analyzed:
+  - days_since_2011
+  - temp
+  - hum
+  - windspeed
+
+The model is trained using the preprocessed dataset described previously. Partial Dependence Plots (PDP) are computed for each selected feature to isolate their individual impact on predictions.
+
+## 2.3 Data Processing & Modeling
+```{r}
+library(randomForest)
+library(ggplot2)
+library(dplyr)
+
+set.seed(123)
+#=====DATA LOADING========
+rentals <- read.csv("day.csv")
+
+#=====DATA PROCESSING=====
+# Selected variables
+variables <- c("workingday", "holiday")
+
+# One-hot encoding for season
+rentals$season1 <- ifelse(rentals$season == 1, 1, 0)
+rentals$season2 <- ifelse(rentals$season == 2, 1, 0)
+rentals$season3 <- ifelse(rentals$season == 3, 1, 0)
+
+variables <- append(variables, c("season1", "season2", "season3"))
+
+# Weather variables
+rentals$MISTY <- ifelse(rentals$weathersit == 2, 1, 0)
+rentals$RAIN <- ifelse(rentals$weathersit %in% c(3, 4), 1, 0)
+
+variables <- append(variables, c("MISTY", "RAIN"))
+
+# Denormalize weather variables
+rentals$temp <- rentals$temp * 41
+rentals$hum <- rentals$hum * 100
+rentals$windspeed <- rentals$windspeed * 67
+
+variables <- append(variables, c("temp", "hum", "windspeed"))
+
+# Days since 2011
+rentals$dteday <- as.Date(rentals$dteday)
+rentals$days_since_2011 <- as.integer(rentals$dteday - as.Date("2011-01-01"))
+
+variables <- append(variables, "days_since_2011")
+
+# Final modelling dataframe
+rentals_model <- rentals[, c(variables, "cnt")]
+
+#======MODELING: Random Forest model=======
+rf_bikes <- randomForest(cnt ~ ., data = rentals_model, ntree = 500, importance = TRUE)
+
+print(rf_bikes)
+importance(rf_bikes)
+```
+
+## 2.4 Visualizing 1-Dimensional PDP
+
+We aren't not allowed to use the special library for pdp, **pdp**, so
+
+```{r}
+#----1D  PDP for days since 2011
+pdp_days <- partial(
+  rf_bikes,
+  pred.var = "days_since_2011",
+  train = rentals_model,
+  grid.resolution = 30
+)
+
+pdp_days = autoplot(pdp_days) +
+  labs(
+    title = "PDP: Days since 2011",
+    x = "Days since 2011",
+    y = "Predicted bike rentals"
+  ) +
+  theme_minimal()
+
+#-----1D PDP for temperature
+pdp_temp <- partial(
+  rf_bikes,
+  pred.var = "temp",
+  train = rentals_model,
+  grid.resolution = 30
+)
+
+pdp_temp = autoplot(pdp_temp) +
+  labs(
+    title = "PDP: Temperature",
+    x = "Temperature (ºC)",
+    y = "Predicted bike rentals"
+  ) +
+  theme_minimal()
+
+#-----1D PDP for humidity
+pdp_hum <- partial(
+  rf_bikes,
+  pred.var = "hum",
+  train = rentals_model,
+  grid.resolution = 30
+)
+
+pdp_hum = autoplot(pdp_hum) +
+  labs(
+    title = "PDP: Humidity",
+    x = "Humidity (%)",
+    y = "Predicted bike rentals"
+  ) +
+  theme_minimal()
+
+#-----1D PDP for wind speed
+pdp_wind <- partial(
+  rf_bikes,
+  pred.var = "windspeed",
+  train = rentals_model,
+  grid.resolution = 30
+)
+pdp_wind = autoplot(pdp_wind) +
+  labs(
+    title = "PDP: Wind speed",
+    x = "Wind speed (km/h)",
+    y = "Predicted bike rentals"
+  ) +
+  theme_minimal()
+
+library(patchwork) #For showing the 4 graphs in a 2x2 matrix
+(pdp_days + pdp_temp) / (pdp_hum + pdp_wind)
+```
+
+## 2.5 Results and Interpretation
+
+- **days_since_2011:** The model captures a clear upward trend over time, indicating increasing bike rental demand, followed by a slight stabilization or decline at later periods.
+
+- **temp:** Temperature has a strong positive effect on rentals up to around 25ºC, after which the demand slightly decreases, suggesting optimal weather conditions for biking.
+
+- **hum:** Humidity shows a negative impact, especially at high levels (>70%), where rental demand drops significantly.
+
+- **windspeed:** Wind speed negatively affects predictions; higher wind conditions lead to fewer expected rentals.
+
+The PDP analysis reveals how each variable affects bike rental predictions while keeping other variables constant.
+
+
+# 3. Bidimensional Partial Dependence Plot (Bike Rentals) for Temperature and Humidity
+
+# 3.1 Objective
+
+This section analyzes the joint effect of temperature and humidity on bike rental predictions using a 2D Partial Dependence Plot.
+
+# 3.2 Methodology
+
+Variables analyzed:
+- temp
+- hum
+
+A random subset of the dataset is used to reduce computational cost.
+
+A 2D PDP is generated using a grid-based approach.
+
+The density distribution of both features is also visualized.
+
+# 3.3 Data Preparing
+
+The Random Forest model is already trained in the `rf_bikes` variable. However, a random subset of the dataset is used to reduce computational cost.
+
+```{r}
+set.seed(123)
+
+# Random sample to reduce computational cost
+rentals_sample <- rentals_model %>%
+  sample_n(min(500, nrow(rentals_model)))
+
+head(rentals_sample)
+```
+
+# 3.4 Visualizing 2-Dimensional PDP
+
+```{r}
+library(pdp)
+library(ggplot2)
+
+# Compute 2D PDP
+pdp_temp_hum <- partial(
+  rf_bikes,
+  pred.var = c("temp", "hum"),
+  train = rentals_sample,
+  grid.resolution = 25
+)
+
+# 2D visualization
+ggplot(pdp_temp_hum, aes(x = temp, y = hum, fill = yhat)) +
+
+  # Heatmap tiles
+  geom_tile(width = 1.8, height = 4) +
+
+  # Density distribution of real observations
+  geom_rug(
+    data = rentals_sample,
+    aes(x = temp, y = hum),
+    inherit.aes = FALSE,
+    alpha = 0.35
+  ) +
+
+  labs(
+    title = "2D PDP: Temperature and Humidity",
+    subtitle = "Predicted bike rentals",
+    x = "Temperature (ºC)",
+    y = "Humidity (%)",
+    fill = "Predicted\nrentals"
+  ) +
+
+  theme_minimal()
+```
+
+# 3.5 Results and Interpretation
+
+The 2D PDP allows identifying interaction effects between temperature and humidity:
+- **Low temperature & high humidity:** the model predicts the lowest number of bike rentals under cold and humid weather conditions.
+- **High temperature & low humidity:** the model predicts the highest rental demand when temperatures are warm, especially between 20ºC and 30ºC, and humidity remains moderate.
+- **Interaction effect:** temperature has stronger impact on predictions than humidity. Rental demand increases significantly with temperature, while very high humidity slightly reduces the positive effect of warm weather.
+
+
+# 4. PDP for House Price Prediction
+
+# 4.1 Objective
+
+To analyze the effect of structural house features on predicted house prices using a Random Forest model.
+
+# 4.2 Methodology
+
+Dataset: `kc_house_data.csv`
+
+Target variable:
+- price
+
+Features:
+- bedrooms
+- bathrooms
+- sqft_living
+- sqft_lot
+- floors
+- yr_built
+
+A random subset of the dataset is used to optimize computation time.
+
+# 4.3 Data Processing & Modeling
+
+The dataset is loaded and prepared for modelling. A Random Forest model is trained using the selected structural house features.
+
+```{r}
+library(randomForest)
+library(dplyr)
+
+#=========Load dataset
+houses <- read.csv("kc_house_data.csv")
+
+# Selected features
+house_variables <- c(
+  "bedrooms",
+  "bathrooms",
+  "sqft_living",
+  "sqft_lot",
+  "floors",
+  "yr_built"
+)
+
+# Final dataframe
+houses_model <- houses[, c(house_variables, "price")]
+
+# Removing missing values
+houses_model <- na.omit(houses_model)
+
+#=====Random sample to reduce computational cost
+set.seed(123)
+
+houses_sample <- houses_model %>%
+  sample_n(min(3000, nrow(houses_model)))
+
+#=======Train Random Forest model
+rf_houses <- randomForest(
+  price ~ .,
+  data = houses_sample,
+  ntree = 500,
+  importance = TRUE
+)
+
+print(rf_houses)
+
+importance(rf_houses)
+```
+
+# 4.4 Visualizing 1-Dimensional PDP
+
+The following PDPs show the marginal effect of each selected variable on predicted house price.
+
+```{r}
+# Bedrooms
+pdp_bedrooms <- partial(
+  rf_houses,
+  pred.var = "bedrooms",
+  train = houses_sample,
+  grid.resolution = 20
+)
+
+pdp_bedrooms = autoplot(pdp_bedrooms) +
+  labs(
+    title = "PDP: Bedrooms",
+    x = "Bedrooms",
+    y = "Predicted price"
+  ) +
+  theme_minimal()
+
+# Bathrooms
+pdp_bathrooms <- partial(
+  rf_houses,
+  pred.var = "bathrooms",
+  train = houses_sample,
+  grid.resolution = 20
+)
+
+pdp_bathrooms = autoplot(pdp_bathrooms) +
+  labs(
+    title = "PDP: Bathrooms",
+    x = "Bathrooms",
+    y = "Predicted price"
+  ) +
+  theme_minimal()
+
+# sqft_living
+pdp_sqft <- partial(
+  rf_houses,
+  pred.var = "sqft_living",
+  train = houses_sample,
+  grid.resolution = 30
+)
+
+pdp_sqft = autoplot(pdp_sqft) +
+  labs(
+    title = "PDP: Living Area",
+    x = "sqft_living",
+    y = "Predicted price"
+  ) +
+  theme_minimal()
+
+# Floors
+pdp_floors <- partial(
+  rf_houses,
+  pred.var = "floors",
+  train = houses_sample,
+  grid.resolution = 20
+)
+
+pdp_floors = autoplot(pdp_floors) +
+  labs(
+    title = "PDP: Floors",
+    x = "Floors",
+    y = "Predicted price"
+  ) +
+  theme_minimal()
+
+(pdp_bedrooms + pdp_bathrooms) / (pdp_sqft + pdp_floors)
+```
+
+# 4.5 Results and Interpretation
+
+- **bedrooms:** the relationship is not strictly linear. Houses with 2 bedrooms achieve the highest predicted prices, while larger numbers of bedrooms tend to reduce or stabilize the prediction price.
+
+- **bathrooms:** bathrooms show a strong positive effect on house prices. Properties with more bathrooms are consistently associated with higher predicted values.
+
+- **sqft_living:** living area is one of the most influential variables. Predicted price increases steadily as the living area grows.
+
+- **floors:** increasing the number of floors moderately increases predicted prices. The curve seems like a stair because there are no houses with 1.5 floors, only works in enitre numbers.
+
+
+# 5. Conclusions
+
+In the bike rental scenario, the analysis revealed that temperature is the most influential environmental factor, while high humidity and strong wind conditions negatively affect rental demand. The 2D PDP also showed that the interaction between temperature and humidity plays an important role in prediction behavior.
+
+In the housing price scenario, the living area and number of bathrooms were identified as the most relevant variables for price estimation. The PDPs also revealed non-linear relationships for variables such as bedrooms and floors.
+
+Overall, PDPs provide valuable insights into how predictive models behave while maintaining model flexibility and high predictive performance. These techniques improve transparency and support business decision-making.
