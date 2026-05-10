@@ -5,7 +5,7 @@ Repository of practical assignments for the course **Model Evaluation** (EDM/GCD
 This repository contains **Python and R implementations** focused on advanced evaluation of Machine Learning models:
 - **Cost-sensitive classification** and Open Set Recognition
 - **Algorithmic fairness** analysis in criminal justice systems
-- **Interpretability** of linear models and explainable AI (XAI)
+- **Explainable AI (XAI)** — Partial Dependence Plots for interpreting complex models (Random Forests)
 
 ---
 
@@ -32,9 +32,11 @@ EDM/
 │   └── compas-scores-two-years.csv        # COMPAS Dataset (ProPublica)
 │
 ├── Task_3/
-│   ├── TASK_3.Rmd                         # Task 3 — Interpretability of Linear Models (R Markdown)
-│   ├── Report_Task3_Interpretability...   # Generated PDF Report
-│   └── day.csv                            # Bike-Sharing Dataset (Capital Bikeshare)
+│   ├── TaskXAI3.Rmd                       # Task 3 — Explainable AI (XAI) & Partial Dependence Plots (R Markdown)
+│   ├── DataInsight_Explainability_Report.pdf  # Comprehensive PDP Analysis Report (Bike Rentals & House Prices)
+│   ├── day.csv                            # Bike-Sharing Dataset (Capital Bikeshare)
+│   ├── kc_house_data.csv                  # King County House Sales Dataset (for price prediction)
+│   └── [Additional Model Outputs & Visualizations]
 │
 └── README.md                              # This file
 ```
@@ -143,180 +145,157 @@ Age groups show dramatically different recidivism rates:
 
 ---
 
-### **Task 3: Interpretability of Linear Models**
+### **Task 3: Explainable AI (XAI) & Partial Dependence Plots**
 
 **Language:** R · **Format:** R Markdown  
-**Dataset:** `day.csv` — Capital Bikeshare (Washington D.C., 2011-2012)
+**Datasets:** 
+- `day.csv` — Capital Bikeshare (Washington D.C., 2011-2012) — **Bike Rental Demand Forecasting**
+- `kc_house_data.csv` — King County House Sales — **Residential House Price Prediction**
 
-Comprehensive exploration of **linear regression interpretability** for predicting daily bicycle rentals.
+Comprehensive exploration of **model-agnostic explainability techniques** using Partial Dependence Plots (PDPs) to interpret complex machine learning models (Random Forests) across two real-world use cases.
 
 #### Context & Motivation
 
-Interpretability is essential in high-stakes domains (medicine, finance, public administration) where accuracy alone is insufficient. **Linear regression** offers an unmatched advantage: each coefficient has direct, quantifiable meaning.
+Modern machine learning often sacrifices interpretability for accuracy. **Explainable AI (XAI)** bridges this gap using **model-agnostic methods** that work with ANY model, regardless of complexity.
 
-**Research Question:** *What factors influence daily bike rentals, and what is the quantitative impact of each?*
+**Challenge:** How do we explain and communicate the behavior of "black-box" models like Random Forests to stakeholders without deep ML knowledge?
+
+**Solution:** **Partial Dependence Plots (PDPs)** — a powerful, intuitive visualization technique that reveals the marginal effect of each feature on predictions while holding all other variables constant.
+
+#### Theory: Model Classification Framework
+
+**By Interpretability Type:**
+| Category | Examples | Trait |
+|---|---|---|
+| **Interpretable Models** | Linear Regression, Decision Trees, Rule-based systems | Direct, transparent internal logic |
+| **Black-Box Models** | Neural Networks, SVM, Gradient Boosting, Random Forests | Complex, opaque decision logic |
+
+**By Explanation Method:**
+| Category | Examples | Coverage |
+|---|---|---|
+| **Model-Specific Methods** | Regression coefficients (linear only), tree splits | Limited to one model type |
+| **Model-Agnostic Methods** | PDP, SHAP, LIME | Apply to ANY model; only need inputs & outputs |
 
 #### Key Objectives
 
--  Understand interpretability principles in linear regression
--  Learn rigorous coefficient interpretation & communication
--  Validate interpretations through diagnostic checks
--  Create effective visualizations (weight plots, effect plots)
--  Identify inherent limitations of linear models
-
-#### Dataset Overview
-
-**Target Variable:**
-- `cnt`: Total daily bicycle rentals (casual + registered users)
-
-**Features:**
-- `season`: Season (1: spring, 2: summer, 3: fall, 4: winter)
-- `workingday`: Working day indicator (0/1)
-- `holiday`: Public holiday indicator (0/1)
-- `weathersit`: Weather (1: clear, 2: cloudy, 3: light rain, 4: heavy rain)
-- `temp`: Normalized temperature (0–1)
-- `atemp`: Normalized apparent temperature (0–1)
-- `hum`: Normalized humidity (0–1)
-- `windspeed`: Normalized wind speed (0–1)
-
-**Statistics:**
-- Total observations: 731 days
-- Mean rentals: 4,504 (SD: 1,937)
-- Range: 22–8,714 bikes/day
-
-#### Initial Hypotheses (Before Modeling)
-
-1.  **Temperature effect:** Warmer days → more rentals
-2.  **Weather effect:** Rain/snow → fewer rentals
-3.  **Day type effect:** Working days vs. weekends/holidays differ
-4.  **Seasonal effect:** Usage varies by season (higher in summer)
-5.  **Trend effect:** 2011 to 2012 growth as service matures
-
-#### Methodology: Data Preprocessing
-
-**One-Hot Encoding** (Categorical Features)
-- `season1`: 1 if spring, 0 otherwise
-- `season2`: 1 if summer, 0 otherwise
-- `season3`: 1 if fall, 0 otherwise
-- (winter is the implicit reference category)
-
-**Binary Weather Features**
-- `MISTY`: 1 if conditions cloudy/misty, 0 otherwise
-- `RAIN`: 1 if light rain/snow or heavy rain/storm, 0 otherwise
-
-**Denormalization** (Continuous Features)
-To improve interpretability, normalized [0,1] values are converted to real-world units:
-
-| Variable | Scale | Multiplier | Interpretation |
-|---|---|---|---|
-| `temp` | 0–1 → °C | ×41 | Degrees Celsius |
-| `hum` | 0–1 → % | ×100 | Percentage humidity |
-| `windspeed` | 0–1 → km/h | ×67 | Wind speed in km/h |
-
-**Trend Feature**
-- `days_since_2011`: Days elapsed since Jan 1, 2011 (captures organic growth)
-
-#### Correlation Analysis
-
-**Key Findings:**
-
-| Feature | Correlation with `cnt` | Significance |
-|---|---|---|
-| `days_since_2011` | +0.63 | Strongest positive |
-| `temp` | +0.63 | Strongest positive |
-| `season1` (Spring) | -0.56 | Negative |
-| `RAIN` | -0.24 | Negative |
-| `temp` ↔ `season1` | -0.62 | Partial collinearity alert |
-
-**Alert:** Collinearity between temperature and spring season may affect individual coefficient stability.
-
-#### Linear Model Results
-
-**Model Specification:**
-```r
-cnt ~ workingday + holiday + season1 + season2 + season3 
-    + MISTY + RAIN + temp + hum + windspeed + days_since_2011
-```
-
-**Goodness of Fit:**
-- **R² = 0.7936** — explains ~79% of variance in daily rentals
-- **F-statistic:** Highly significant (p < 2.2e-16)
-- **Residual SE:** 886.9 rentals
-
-**Model Coefficients (Interpretation):**
-
-| Variable | Coefficient | Std. Error | t-stat | p-value | Interpretation |
-|---|---|---|---|---|---|
-| (Intercept) | 1,939.37 | 275.93 | 7.03 | *** | Baseline rentals |
-| `workingday` | +124.92 | 73.27 | 1.71 | 0.089 | Working day: +125 rentals (marginal) |
-| `holiday` | -686.12 | 203.30 | -3.38 | *** | Holiday: -686 rentals (commuters absent) |
-| `season1` (Spring) | -425.60 | 110.82 | -3.84 | *** | Spring: -426 rentals vs. winter |
-| `season2` (Summer) | +473.72 | 109.95 | 4.31 | *** | Summer: +474 rentals (peak season) |
-| `season3` (Fall) | -287.39 | 134.22 | -2.14 | * | Fall: -287 rentals |
-| `MISTY` | -379.40 | 87.55 | -4.33 | *** | Cloudy: -379 rentals |
-| `RAIN` | -1,901.54 | 223.64 | -8.50 | *** | **Rain: -1,902 rentals (strongest deterrent)** |
-| `temp` | +126.91 | 8.07 | 15.72 | *** | **+1°C: +127 rentals (second strongest positive)** |
-| `hum` | -17.38 | 3.17 | -5.48 | *** | +1% humidity: -17 rentals |
-| `windspeed` | -42.51 | 6.89 | -6.17 | *** | +1 km/h wind: -43 rentals |
-| `days_since_2011` | +4.93 | 0.17 | 28.51 | *** | **+1 day: +5 rentals (strongest positive trend)** |
-
-**Key Insights:**
-
-1. **Temperature** (+127/°C) and **days_since_2011** (+5/day) are the strongest positive drivers
-2. **Rain** (-1,902) is the dominant negative factor — a heavy rain day loses >1,900 rentals!
-3. **Holidays** (-686) show the service is commuter-dependent
-4. **Collinearity note:** The negative spring effect partially reflects spring's cooler temperatures (captured by temp), not spring itself
-
-#### Limitations of Linear Interpretation
-
- **Confounding:** `days_since_2011` absorbs both service growth AND seasonal patterns  
- **Collinearity:** temp and season1 correlation (-0.62) makes individual effects unstable  
- **Non-linearity:** Model assumes linear relationships; real effects may plateau at extremes  
- **No interactions:** Cannot capture how wind's effect varies by day type (weekday vs. weekend)  
- **Outliers:** Extreme observations can shift coefficients substantially
-
-#### Visualization Tools
-
-**Weight Plots:**
-- **Unstandardized:** Shows raw coefficients but misleads (apples-to-oranges)
-- **Standardized:** Coefficients for ±1 SD changes — enables fair comparisons
-
-**Effect Plots:**
-- Combines coefficient magnitude **AND** feature variance
-- Shows practical impact range for each feature across the dataset
-- Ordered by mean effect for business importance assessment
-
-**Individual Prediction Decomposition:**
-- Explains single predictions feature-by-feature
-- Shows which factors pushed prediction above/below average
-- Essential for stakeholder communication
-
-#### Example: Predicting Day 6 (Jan 6, 2011)
-
-**Actual:** 1,606 rentals  
-**Predicted:** 1,571 rentals (error: -35, or 2%)  
-**System average:** 4,504 rentals
-
-**Why 1,571 (so far below average)?**
-
-- 🔴 **`days_since_2011`** (day 5): Nearly zero trend effect — service just launched
-- 🔴 **`temp`** (cold January): Lower tail of distribution — heavy negative contributor
-- 🟡 **`hum` & `windspeed`**: Modest negative effects from winter weather
-- ⚪ **Season, weather binary, day type**: Marginal contributions (~0)
-
-**Conclusion:** Early winter launch day with minimal trend and cold temperatures → far below average. The effect decomposition makes this transparent and explainable to any stakeholder.
-
-#### Business Implications
-
-1. **Weather forecasting:** Invest in demand forecasting tied to weather predictions
-2. **Fleet optimization:** Growing service supports infrastructure expansion
-3. **Commuter-focused strategy:** Working days are revenue drivers; promotions on holidays could attract recreational users
-4. **Model transparency:** Linear regression enables full auditability and communication of decisions
-5.  **Model limitations:** For higher accuracy, explore flexible models; linear regression remains the interpretable baseline
+- Master model-agnostic explainability and why it matters for business
+- Apply 1D and 2D Partial Dependence Plots to interpret Random Forest predictions
+- Identify feature interactions and non-linear relationships
+- Compare explainability across different domains (demand forecasting vs. price prediction)
+- Create actionable insights for stakeholders and decision-makers
+- Understand limitations and best practices of PDP methodology
 
 ---
 
-## Technologies & Libraries
+#### **Use Case 1: Bike Rental Demand Forecasting (Bike-Sharing Dataset)**
+
+**Objective:** Understand how weather, time, and operational factors influence bike rental demand using Random Forest predictions.
+
+**Model:** Random Forest Regressor (500 trees, R² = 88.48%)
+
+**1D PDP Analysis — Key Findings:**
+
+| Feature | Pattern | Business Insight |
+|---|---|---|
+| **Temperature** | Non-linear ∩ shape; optimal 20–30°C | Warm days boost demand; extreme heat reduces rentals |
+| **Humidity** | Negative relationship; steep drop >70% | High humidity is strong demand deterrent |
+| **Wind Speed** | Negative linear decay | Each km/h wind decreases predicted rentals |
+| **Days since 2011** | Strong upward trend → plateau | Service shows healthy organic growth, then stabilizes |
+
+**2D PDP Analysis — Temperature × Humidity Interaction:**
+
+The 2D heatmap reveals how these variables combine:
+- **Best conditions:** High temp (20–30°C) + low humidity → peak demand (~5,000+ rentals)
+- **Worst conditions:** Low temp + high humidity → minimum demand (~3,000 rentals)
+- **Temperature dominates:** Rental demand increases sharply with warmth regardless of humidity
+- **Humidity dampens:** High humidity partially offsets temperature's positive effect
+
+**Key Business Recommendations:**
+1. Integrate weather forecasts into fleet availability planning
+2. Prepare for demand peaks on warm, dry days
+3. Adjust staffing/pricing for low-demand humid periods
+4. Use historical growth trends to justify expansion investments
+
+---
+
+#### **Use Case 2: Residential House Price Prediction (King County Sales)**
+
+**Objective:** Identify which structural property features drive house prices using Random Forest predictions.
+
+**Model:** Random Forest Regressor (500 trees, R² = 56.54%)
+
+**1D PDP Analysis — Key Findings:**
+
+| Feature | Pattern | Business Insight |
+|---|---|---|
+| **Living Area (sqft_living)** | Strong positive linear (most important) | Size is the #1 price driver — every sqft counts |
+| **Bathrooms** | Consistent positive effect | Each bathroom adds meaningful value; accelerating returns |
+| **Bedrooms** | Non-linear ∩ shape; peak at 2 bedrooms | More bedrooms don't always increase value; diminishing returns |
+| **Year Built** | Positive trend; newer homes command premiums | Age/condition affects buyer preferences |
+| **Floors** | Staircase pattern; moderate positive effect | Multi-story homes valued higher, but gains plateau |
+| **Lot Size (sqft_lot)** | Moderate positive effect | Land size matters but less than living space |
+
+**Non-Linear Surprise: Bedroom Paradox**
+The model reveals homes with ~2 bedrooms command highest prices, while additional bedrooms reduce value. This may reflect:
+- Trade-off: More bedrooms = less living space per room
+- Market segmentation: Large-bedroom properties cluster in lower-value segments
+
+**Key Business Recommendations:**
+1. **Valuation:** Prioritize living area in all pricing models — it dominates predictions
+2. **Acquisition:** Weight bathroom count heavily; bathrooms signal quality to buyers
+3. **Development:** Avoid assuming linear bedroom-price relationship
+4. **Marketing:** Lead with square footage and bathroom count in listings
+
+---
+
+#### PDP Methodology: Why This Technique?
+
+**Advantages of PDPs:**
+✓ **Model-agnostic:** Works with any model (linear, tree-based, neural networks, etc.)  
+✓ **Intuitive:** Clear visualizations that stakeholders understand without ML expertise  
+✓ **Causal-like interpretation:** Shows marginal effect of changing one feature while holding others constant  
+✓ **Captures non-linearity:** Reveals curves, plateaus, and thresholds that linear models miss  
+✓ **Supports 2D interaction analysis:** Visualizes how two features combine to influence predictions  
+
+**Limitations to Consider:**
+⚠ **Assumes independence:** Features may correlate (e.g., larger homes have more bathrooms)  
+⚠ **Extrapolation risk:** Predictions outside data range can be unreliable  
+⚠ **Ignores individual heterogeneity:** Shows averages; doesn't explain why one specific prediction differs  
+⚠ **Computational cost:** 2D PDPs require more computation; use random sampling for large datasets  
+
+#### Technical Implementation
+
+**Data Processing Pipeline:**
+1. **Feature Engineering:** Denormalize scaled variables to real-world units for interpretability
+2. **Categorical Encoding:** One-hot encode categorical features (seasons, weather conditions)
+3. **Train-Test Split:** Random Forest trained on full/sample data
+4. **Grid Resolution:** 25–30 grid points for smooth PDP curves
+
+**R Libraries Used:**
+```r
+library(randomForest)  # Model training
+library(pdp)          # Partial Dependence Plot computation
+library(ggplot2)      # Visualization
+library(patchwork)    # Multi-plot layouts
+```
+
+#### Business Implications: From Explanation to Action
+
+**For Bike-Sharing Operations:**
+- Deploy predictive demand dashboards using weather feeds
+- Proactively rebalance fleet before forecasted high-demand periods
+- Launch targeted promotions during low-demand humid/windy days
+- Validate long-term expansion plans against 5-year growth trends
+
+**For Real Estate Valuation:**
+- Implement automated valuation models (AVMs) anchored on living area
+- Train sales teams on non-linear relationships (bedroom paradox)
+- Adjust acquisition strategies based on bathroom/square-footage ROI
+- Monitor market shifts by comparing PDP curves across time periods
+
+---
+
+##  Technologies & Libraries
 
 ### Python
 - **scikit-learn** — classification, regression, metrics, feature selection
@@ -363,21 +342,26 @@ setwd("Task_2/")
 rmarkdown::render("Task_2.Rmd", output_format = "pdf_document")
 ```
 
-### Task 3 (R — Bike-Sharing Interpretability)
+### Task 3 (R — Explainable AI & Partial Dependence Plots)
 
 ```r
 # Install dependencies (run once)
 install.packages(c(
-  "dplyr", "ggplot2", "gridExtra", "corrplot", 
-  "car", "lmtest", "reshape2"
+  "dplyr", "ggplot2", "patchwork",
+  "randomForest", "pdp"
 ))
 
 # Set working directory to Task_3/
 setwd("Task_3/")
 
-# Ensure day.csv is in the working directory
+# Ensure both datasets are present:
+# - day.csv (Bike-Sharing Dataset)
+# - kc_house_data.csv (King County House Sales)
+
 # Then render the R Markdown report
-rmarkdown::render("TASK_3.Rmd", output_format = "pdf_document")
+rmarkdown::render("TaskXAI3.Rmd", output_format = "html_document")
+# Or to PDF:
+# rmarkdown::render("TaskXAI3.Rmd", output_format = "pdf_document")
 ```
 
 ---
@@ -405,21 +389,31 @@ rmarkdown::render("TASK_3.Rmd", output_format = "pdf_document")
 - **Capital Bikeshare Dataset**  
   UCI Machine Learning Repository
   
-- Fanaee-T, H., & Ghaderi, J. (2013). *Event labeling combining ensemble detectors and background knowledge*. Progress in Artificial Intelligence, 2(2-3), 113-126.
+- **King County House Sales Dataset**  
+  UCI Machine Learning Repository & Kaggle
   
 - Molnar, C. (2020). *Interpretable Machine Learning: A Guide for Making Black Box Models Explainable*. https://christophm.github.io/interpretable-ml-book/
+  - Chapter 4: Partial Dependence Plot (PDP)
+  - Chapter 5: Individual Conditional Expectation (ICE)
+  
+- Friedman, J. H. (2001). *Greedy function approximation: A gradient boosting machine*. Annals of Statistics, 29(5), 1189-1232.
+  - Original introduction of Partial Dependence concept
   
 - Ribeiro, M. T., Singh, S., & Guestrin, C. (2016). *"Why Should I Trust You?": Explaining the Predictions of Any Classifier*. KDD.
+  - LIME — complementary model-agnostic explanation technique
+  
+- Lundberg, S. M., & Lee, S. I. (2017). *A Unified Approach to Interpreting Model Predictions*. NIPS.
+  - SHAP — advanced model-agnostic explanation framework
 
 ---
 
 ##  Summary Table
 
-| Assignment | Topic | Language | Dataset | Techniques |
+| Assignment | Topic | Language | Datasets | Techniques |
 |---|---|---|---|---|
 | **Practice 1** | Cost-Sensitive Classification & OSR | Python | BreastCancer, MNIST | Greedy FS, thresholding, distance metrics, AUROC, OSCR |
 | **Task 2** | Fairness Analysis | R | COMPAS | Sufficiency, separation, fairness metrics, ROC curves |
-| **Task 3** | Linear Model Interpretability | R | Bike-Sharing | Coefficient interpretation, weight plots, effect plots, feature engineering |
+| **Task 3** | Explainable AI & Partial Dependence Plots | R | Bike-Sharing, King County Houses | PDP (1D & 2D), Random Forest interpretation, feature interactions, non-linearity analysis |
 
 ---
 
@@ -428,8 +422,11 @@ rmarkdown::render("TASK_3.Rmd", output_format = "pdf_document")
 1. **Cost-sensitive learning matters:** Different error types have different costs; optimize accordingly
 2. **Open set recognition is realistic:** Real-world classifiers must detect unknown classes
 3. **Fairness is multidimensional:** Sufficiency and separation are fundamentally incompatible (impossibility theorem)
-4. **Interpretability enables trust:** Linear models provide full transparency for high-stakes decisions
-5. **Feature engineering improves interpretability:** Denormalization and meaningful representations aid communication
+4. **Explainability bridges accuracy and trust:** Model-agnostic methods (PDP, SHAP) work with any model and enhance interpretability
+5. **Non-linearity matters:** Partial Dependence Plots reveal curves, interactions, and thresholds that simpler models miss
+6. **Business context drives interpretation:** The same model outputs different insights in demand forecasting vs. valuation contexts
+7. **Feature interactions are crucial:** 2D PDPs show how variables combine — temperature + humidity jointly shape bike rental demand
+8. **Stakeholder communication is paramount:** Clear visualizations (PDPs) enable non-technical stakeholders to understand and act on model predictions
 
 ---
 
